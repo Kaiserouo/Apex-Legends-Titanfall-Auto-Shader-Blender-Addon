@@ -181,7 +181,7 @@ class NodeAdder:
         cls.method[texture_name](img_path, mat, cas_node_group, location)
         return True
 
-def shadeMesh(mesh: bpy.types.Object, do_check=True):
+def shadeMesh(mesh: bpy.types.Object, do_check=False):
     print(f"[*] shadeMesh({mesh})")
     mat = mesh.active_material
     nodes = mat.node_tree.nodes
@@ -227,7 +227,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=True):
     
     return
 
-def shadeArmature(armature: bpy.types.Object, do_check=True):
+def shadeArmature(armature: bpy.types.Object, do_check=False):
     print(f'[*] shadeArmature({armature})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
     success_ls = []

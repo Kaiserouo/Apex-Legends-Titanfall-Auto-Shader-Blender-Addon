@@ -2,10 +2,10 @@ from . import utils, config
 import bpy
 from bpy_extras.io_utils import ImportHelper
 
-class ApexShadeLegendOp(bpy.types.Operator):
-    """Shade Selected Apex Legend. Can select either mesh or armature."""
-    bl_idname = "apexaddon.shade_legend"
-    bl_label = "Shade Selected Apex Legend"
+class ApexShadeActiveLegendOp(bpy.types.Operator):
+    """Shade one active Apex Legend. Can select either mesh or armature. Only shades ONE object (the active one)."""
+    bl_idname = "apexaddon.shade_active_legend"
+    bl_label = "Shade Active Apex Legend"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -17,10 +17,27 @@ class ApexShadeLegendOp(bpy.types.Operator):
         if obj.type in methods:
             methods[obj.type](obj)
         else:
-            raise Exception(f'Not one of the following: {list(methods.keys())}')
+            raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
 
-    
+class ApexShadeSelectedLegendOp(bpy.types.Operator):
+    """Shade all selected Apex Legends. Can select multiple meshes or armatures."""
+    bl_idname = "apexaddon.shade_selected_legend"
+    bl_label = "Shade Selected Apex Legend"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        methods = {
+            'MESH': utils.shadeMesh,
+            'ARMATURE': utils.shadeArmature
+        }
+        for obj in context.selected_objects:
+            if obj.type in methods:
+                methods[obj.type](obj)
+            else:
+                raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+        return {'FINISHED'}
+
 class ApexImportCASOp(bpy.types.Operator, ImportHelper):
     """Operator for setting Core Apex Shader blender file path."""
 
@@ -41,7 +58,8 @@ class ApexImportCASOp(bpy.types.Operator, ImportHelper):
 # class contains everything that is not a submenu
 # used for (un)registering
 classes = (
-    ApexShadeLegendOp,
+    ApexShadeActiveLegendOp,
+    ApexShadeSelectedLegendOp,
     ApexImportCASOp
 )
 
@@ -51,7 +69,8 @@ class Submenu(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator(ApexShadeLegendOp.bl_idname)
+        layout.operator(ApexShadeActiveLegendOp.bl_idname)
+        layout.operator(ApexShadeSelectedLegendOp.bl_idname)
         layout.operator(ApexImportCASOp.bl_idname)
 
 

@@ -31,10 +31,10 @@ Make sure to `Apex Shader > Set Core Apex Shader blender file path` first, to us
 [O] glossTexture
 [O] normalTexture
 [O] specTexture
+[O] opacityMultiplyTexture (ref. https://youtu.be/dMqk0jz749U?t=1108)
 [X] anisoSpecDirTexture
 [X] scatterThicknessTexture
 [X] transmittanceTintTexture
-[X] opacityMultiplyTexture
 
 ... (there may be other textures not listed here)
 ```

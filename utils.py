@@ -152,7 +152,31 @@ class NodeAdder:
     
     @staticmethod
     def _addOpacityMultiply(img_path, mat, cas_node_group, location):
-        pass
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+
+        transparent_node = mat.node_tree.nodes.new(type='ShaderNodeBsdfTransparent')
+        transparent_node.location = (200, 200)
+        
+        mix_shader_node = mat.node_tree.nodes.new(type='ShaderNodeMixShader')
+        mix_shader_node.location = (400, 200)
+
+        # find output node
+        output_node = [node for node in mat.node_tree.nodes.values() if node.type == 'OUTPUT_MATERIAL'][0]
+
+        # ref. https://youtu.be/dMqk0jz749U?t=1108
+        img_node.image.colorspace_settings.name = 'Non-Color'
+        mat.node_tree.links.new(img_node.outputs['Color'], mix_shader_node.inputs[0])
+        mat.node_tree.links.new(transparent_node.outputs[0], mix_shader_node.inputs[1])
+
+        # should actually take whatever is linked to output_node.inputs['Surface'] as input
+        # but may not be the best to assume that. oh well.
+        mat.node_tree.links.new(cas_node_group.outputs[0], mix_shader_node.inputs[2])
+        mat.node_tree.links.new(mix_shader_node.outputs[0], output_node.inputs['Surface'])
+        mat.blend_method = 'CLIP'
+        
     
     method = {
         'albedoTexture': _addAlbedo,

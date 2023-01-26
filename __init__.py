@@ -5,7 +5,7 @@ bl_info = {
     "version": (1, 1),
     "blender": (3, 2, 0),
     "location": "View3D > Object Context Menu / Pose Context Menu > Apex Auto Shader",
-    "doc_url": "https://github.com/Kaiserouo/Apex-Legends-Auto-Shader",
+    "doc_url": "https://github.com/Kaiserouo/Apex-Legends-Auto-Shader-Blender-Addon",
     "category": "Object"
 }
 

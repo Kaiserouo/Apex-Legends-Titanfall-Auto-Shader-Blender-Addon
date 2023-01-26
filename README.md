@@ -31,7 +31,7 @@ Make sure to `Apex Shader > Set Core Apex Shader blender file path` first, to us
 ```
 
 ## Installation
-1. Clone this repository and zip it, or just download as zip file on Github.
+1. Clone this repository and zip it, or just download as zip file on Github. (`Code -> Download ZIP`)
 2. `Edit -> Preferences -> Add-ons -> Install..` and choose the zip file.
 3. Activate the addon by checking the box.
-4. `Save Preference`
+4. `Save Preferences`

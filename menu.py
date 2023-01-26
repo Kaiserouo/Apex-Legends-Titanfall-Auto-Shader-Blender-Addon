@@ -3,7 +3,7 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 
 class ApexShadeLegendOp(bpy.types.Operator):
-    """Adjust bone tips for selected Apex legend'."""
+    """Shade Selected Apex Legend. Can select either mesh or armature."""
     bl_idname = "apexaddon.shade_legend"
     bl_label = "Shade Selected Apex Legend"
     bl_options = {'REGISTER', 'UNDO'}

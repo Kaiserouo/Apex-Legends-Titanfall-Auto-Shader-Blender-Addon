@@ -47,3 +47,12 @@ Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semo
 3. Activate the addon by checking the box. 
    + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).
 4. `Save Preferences`.
+
+## Problem
+Some of the problem that may occur. This is just a helper addon, you should check the result and modify shader nodes when needed.
+
++ When shading `bloodhound_v21_heroknight_w`, the whole model would look invisible.
+  + This is because their `opacityMultiplyTexture` is not like other model's opacity multiply texture. Delete its `*_opacityMultiplyTexture.png` file and reshade again (or just connect `Cores Apex Shader` to `Material Output` manually).
++ When shading a lot of meshes all at once, blender may stop responding.
+  + This is normal, it's just the addon took too long processing those textures. **DON'T CLOSE BLENDER** and wait a while longer, it will be good soon enough... (or do close blender if you give up waiting.)
+  + Open console before shading (`Window > Toggle System Console`) to track progress.

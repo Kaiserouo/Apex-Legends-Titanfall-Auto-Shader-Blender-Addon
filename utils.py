@@ -247,5 +247,8 @@ def shadeArmature(armature: bpy.types.Object, do_check=False):
     print(f'Failed: ')
     for i in failed_ls:
         print("    ", i)
+    
+    if len(failed_ls) != 0:
+        raise Exception(f"Exception occured when shading those meshes: {failed_ls}")
     return
 

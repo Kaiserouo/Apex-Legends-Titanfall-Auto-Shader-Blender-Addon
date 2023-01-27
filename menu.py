@@ -31,7 +31,8 @@ class ApexShadeSelectedLegendOp(bpy.types.Operator):
             'MESH': utils.shadeMesh,
             'ARMATURE': utils.shadeArmature
         }
-        for obj in context.selected_objects:
+        for i, obj in enumerate(context.selected_objects):
+            print(f'[ShadeAll {i}/{len(context.selected_objects)}] {obj}')
             if obj.type in methods:
                 methods[obj.type](obj)
             else:

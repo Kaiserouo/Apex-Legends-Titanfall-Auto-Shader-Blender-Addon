@@ -227,7 +227,8 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False):
     # whatever the case is, take any Image Texture available
     # (if did the check then must exist, otherwise might not exist...)
     img_texture = [node for node in nodes.values() if node.type == 'TEX_IMAGE'][0]
-    img_path = Path(img_texture.image.filepath)
+    # (blender use leading double slash `//` as relpath. use bpy first to make it absolute for pathlib)
+    img_path = Path(bpy.path.abspath(img_texture.image.filepath))
 
     # clear field
     nodes.clear()
@@ -247,7 +248,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False):
     # add all textures
     for i, texture_path in enumerate(texture_paths):
         ret = NodeAdder.addImageTexture(texture_path, mat, cas_node_group, (0.0, -70.0 * i))
-        print(f'[>]     Adding texture {str(texture_path)}... {"O" if ret else "X"}')
+        print(f'     Adding texture {str(texture_path)}... {"O" if ret else "X"}')
     
     return
 
@@ -257,8 +258,9 @@ def shadeArmature(armature: bpy.types.Object, do_check=False):
     success_ls = []
     failed_ls = []
 
-    for mesh in meshes:
+    for i, mesh in enumerate(meshes):
         try:
+            print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
             shadeMesh(mesh, do_check)
             success_ls.append(mesh)
         except Exception as e:

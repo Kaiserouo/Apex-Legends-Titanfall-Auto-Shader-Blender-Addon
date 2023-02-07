@@ -205,7 +205,11 @@ class NodeAdder:
         cls.method[texture_name](img_path, mat, cas_node_group, location)
         return True
 
-def shadeMesh(mesh: bpy.types.Object, do_check=False):
+class NodeAdderWithoutOpacity(NodeAdder):
+    method = NodeAdder.method.copy()
+    method.pop('opacityMultiplyTexture')
+
+def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     print(f"[*] shadeMesh({mesh})")
     mat = mesh.active_material
     nodes = mat.node_tree.nodes
@@ -247,12 +251,12 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False):
 
     # add all textures
     for i, texture_path in enumerate(texture_paths):
-        ret = NodeAdder.addImageTexture(texture_path, mat, cas_node_group, (0.0, -70.0 * i))
+        ret = node_adder_cls.addImageTexture(texture_path, mat, cas_node_group, (0.0, -70.0 * i))
         print(f'     Adding texture {str(texture_path)}... {"O" if ret else "X"}')
     
     return
 
-def shadeArmature(armature: bpy.types.Object, do_check=False):
+def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     print(f'[*] shadeArmature({armature})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
     success_ls = []
@@ -261,7 +265,7 @@ def shadeArmature(armature: bpy.types.Object, do_check=False):
     for i, mesh in enumerate(meshes):
         try:
             print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
-            shadeMesh(mesh, do_check)
+            shadeMesh(mesh, do_check, node_adder_cls)
             success_ls.append(mesh)
         except Exception as e:
             print(e)

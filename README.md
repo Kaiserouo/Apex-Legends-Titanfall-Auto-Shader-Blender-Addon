@@ -35,7 +35,8 @@ Make sure to `Apex Shader > Set Core Apex Shader blender file path` first, to us
 [X] anisoSpecDirTexture
 [X] scatterThicknessTexture
 [X] transmittanceTintTexture
-[X] emissiveMultiply
+[X] emissiveMultiplyTexture
+[X] uvDistortionTexture
 
 ... (there may be other textures not listed here)
 ```

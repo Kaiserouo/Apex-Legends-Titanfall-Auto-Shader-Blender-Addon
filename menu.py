@@ -34,7 +34,26 @@ class ApexShadeSelectedLegendOp(bpy.types.Operator):
         for i, obj in enumerate(context.selected_objects):
             print(f'[ShadeAll {i}/{len(context.selected_objects)}] {obj}')
             if obj.type in methods:
-                methods[obj.type](obj)
+                methods[obj.type](obj, do_check=False)
+            else:
+                raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+        return {'FINISHED'}
+        
+class ApexShadeSelectedLegendWithoutOpacityOp(bpy.types.Operator):
+    """Shade all selected Apex Legends, but don't use opacity multiplier"""
+    bl_idname = "apexaddon.shade_selected_legend_without_opacity"
+    bl_label = "Shade Selected Apex Legend (Without Opacity Multiplier)"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        methods = {
+            'MESH': utils.shadeMesh,
+            'ARMATURE': utils.shadeArmature
+        }
+        for i, obj in enumerate(context.selected_objects):
+            print(f'[ShadeAllWithoutOpacity {i}/{len(context.selected_objects)}] {obj}')
+            if obj.type in methods:
+                methods[obj.type](obj, do_check=False, node_adder_cls=utils.NodeAdderWithoutOpacity)
             else:
                 raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
@@ -61,6 +80,7 @@ class ApexImportCASOp(bpy.types.Operator, ImportHelper):
 classes = (
     ApexShadeActiveLegendOp,
     ApexShadeSelectedLegendOp,
+    ApexShadeSelectedLegendWithoutOpacityOp,
     ApexImportCASOp
 )
 
@@ -72,6 +92,7 @@ class Submenu(bpy.types.Menu):
         layout = self.layout
         layout.operator(ApexShadeActiveLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendOp.bl_idname)
+        layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
         layout.operator(ApexImportCASOp.bl_idname)
 
 

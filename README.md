@@ -33,8 +33,8 @@ For mesh and armatures, this addon can find and import all other textures based 
 [O] specTexture
 [O] opacityMultiplyTexture
   -> (ref. https://youtu.be/dMqk0jz749U?t=1108, may fail on some case)
-[?] scatterThicknessTexture
-  -> strange result in some cases, e.g. octane_base_body_scatterThicknessTexture
+[O] scatterThicknessTexture
+  -> (ref. https://youtu.be/dMqk0jz749U?t=1081, may fail on some case)
 [X] anisoSpecDirTexture
 [X] transmittanceTintTexture
 [X] emissiveMultiplyTexture
@@ -62,5 +62,5 @@ Some of the problem that may occur. Do note that this is just a helper addon, yo
   + This is normal, it's just the addon took too long processing those textures. **DON'T CLOSE BLENDER** and wait a while longer, it will be good soon enough... (or do close blender if you give up waiting.)
   + Open console before shading (`Window > Toggle System Console`) to track progress.
 + Octane's skin looked orange-ish.
-  + Its `octane_base_body_scatterThicknessTexture` does not look like it is properly exported...?
+  + Its `octane_base_body_scatterThicknessTexture` doesn't look like it is properly exported...?
   + Use `Remove Texture From Selected Legends > Remove scatterThicknessTexture` on armature to remove that texture if you want.

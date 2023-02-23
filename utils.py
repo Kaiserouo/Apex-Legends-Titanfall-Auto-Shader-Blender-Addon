@@ -131,6 +131,7 @@ class NodeAdder:
 
     @staticmethod
     def _addSubsurface(img_path, mat, cas_node_group, location):
+        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
         img_node.hide = True
         img_node.location = location
@@ -140,10 +141,6 @@ class NodeAdder:
     
     @staticmethod
     def _addAnisoSpecDir(img_path, mat, cas_node_group, location):
-        pass
-    
-    @staticmethod
-    def _addScatterThickness(img_path, mat, cas_node_group, location):
         pass
     
     @staticmethod
@@ -190,7 +187,7 @@ class NodeAdder:
         # those are things I don't even know how to deal with
         # (or so hard to deal with I just quitted)
         'anisoSpecDirTexture': _addAnisoSpecDir,
-        'scatterThicknessTexture': _addScatterThickness,
+        'scatterThicknessTexture': _addSubsurface,
         'transmittanceTintTexture': _addTransmittanceTint,
         'opacityMultiplyTexture': _addOpacityMultiply
     }

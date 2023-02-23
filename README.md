@@ -34,7 +34,8 @@ For mesh and armatures, this addon can find and import all other textures based 
 [O] opacityMultiplyTexture
   -> (ref. https://youtu.be/dMqk0jz749U?t=1108, may fail on some case)
 [X] anisoSpecDirTexture
-[X] scatterThicknessTexture
+[?] scatterThicknessTexture
+  -> strange result in some cases, e.g. octane_base_body_scatterThicknessTexture
 [X] transmittanceTintTexture
 [X] emissiveMultiplyTexture
 [X] uvDistortionTexture

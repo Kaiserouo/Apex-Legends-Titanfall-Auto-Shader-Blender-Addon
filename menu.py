@@ -73,6 +73,54 @@ class ApexImportCASOp(bpy.types.Operator, ImportHelper):
 
         return{'FINISHED'}
 
+def makeRemoveTextureSelectedClass(texture_type):
+    # NOTE: when registering class, bl_idname must only contain lower case w/o special chars
+    # texture_type.lower() may not be enough
+    class ApexRemoveTextureSelectedOp(bpy.types.Operator):
+        f"""Remove texture '{texture_type}' from all selected armature or mesh"""
+        bl_idname = f"apexaddon.remove_texture_{texture_type.lower()}"
+        bl_label = f"Remove {texture_type}"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        def execute(self, context):
+            methods = {
+                'MESH': utils.removeTextureMesh,
+                'ARMATURE': utils.removeTextureArmature
+            }
+            for i, obj in enumerate(context.selected_objects):
+                print(f'[RemoveAllTexture {texture_type} {i}/{len(context.selected_objects)}] {obj}')
+                if obj.type in methods:
+                    methods[obj.type](obj, texture_type)
+                else:
+                    raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+            return {'FINISHED'}
+    return ApexRemoveTextureSelectedOp
+
+removable_texture_ls = [
+    'albedoTexture',
+    'aoTexture',
+    'cavityTexture',
+    'emissiveTexture',
+    'glossTexture',
+    'normalTexture',
+    'specTexture',
+    'opacityMultiplyTexture',
+    'scatterThicknessTexture',
+]
+
+remove_texture_class_ls = [
+    makeRemoveTextureSelectedClass(texture_type) 
+    for texture_type in removable_texture_ls
+]
+
+class ApexRemoveTextureSubmenu(bpy.types.Menu):
+    bl_idname = "OBJECT_MT_apex_remove_texture_submenu"
+    bl_label = "Remove Texture From Selected Legends"
+
+    def draw(self, context):
+        layout = self.layout
+        for rm_cls in remove_texture_class_ls:
+            layout.operator(rm_cls.bl_idname)
 
 # ---
 # class contains everything that is not a submenu
@@ -81,6 +129,8 @@ classes = (
     ApexShadeActiveLegendOp,
     ApexShadeSelectedLegendOp,
     ApexShadeSelectedLegendWithoutOpacityOp,
+    *remove_texture_class_ls,
+    ApexRemoveTextureSubmenu,
     ApexImportCASOp
 )
 
@@ -93,6 +143,7 @@ class Submenu(bpy.types.Menu):
         layout.operator(ApexShadeActiveLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
+        layout.menu(ApexRemoveTextureSubmenu.bl_idname)
         layout.operator(ApexImportCASOp.bl_idname)
 
 

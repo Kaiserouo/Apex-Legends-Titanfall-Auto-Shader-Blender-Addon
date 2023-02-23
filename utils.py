@@ -158,6 +158,7 @@ class NodeAdder:
         transparent_node.location = (200, 200)
         
         mix_shader_node = mat.node_tree.nodes.new(type='ShaderNodeMixShader')
+        mix_shader_node.inputs[0].default_value = 1     # so if there's no image node as input it is no-op
         mix_shader_node.location = (400, 200)
 
         # find output node
@@ -183,13 +184,13 @@ class NodeAdder:
         'glossTexture': _addGlossy,
         'normalTexture': _addNormal,
         'specTexture': _addSpec,
+        'opacityMultiplyTexture': _addOpacityMultiply,
+        'scatterThicknessTexture': _addSubsurface,
 
         # those are things I don't even know how to deal with
         # (or so hard to deal with I just quitted)
         'anisoSpecDirTexture': _addAnisoSpecDir,
-        'scatterThicknessTexture': _addSubsurface,
         'transmittanceTintTexture': _addTransmittanceTint,
-        'opacityMultiplyTexture': _addOpacityMultiply
     }
 
     @classmethod
@@ -279,3 +280,43 @@ def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=Nod
         raise Exception(f"Exception occured when shading those meshes: {failed_ls}")
     return
 
+def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
+    # remove texture
+    # e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
+    # then texture_type = 'scatterThicknessTexture'
+    print(f'[*] removeTextureMesh({mesh}, {texture_type})')
+    mat = mesh.active_material
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    img_textures = [node for node in nodes.values() if node.type == 'TEX_IMAGE']
+    for img_texture in img_textures:
+        img_path = Path(bpy.path.abspath(img_texture.image.filepath))
+        if img_path.stem[img_path.stem.rindex('_')+1:] == texture_type:
+            print(f'    removed {str(img_path.stem)}')
+            nodes.remove(img_texture)
+
+def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
+    print(f'[*] removeTextureArmature({armature}, {texture_type})')
+    meshes = [obj for obj in armature.children if obj.type == 'MESH']
+    success_ls = []
+    failed_ls = []
+
+    for i, mesh in enumerate(meshes):
+        try:
+            print(f"[Armature-Mesh {i}/{len(meshes)}] removing texture '{texture_type}' from mesh {mesh}...")
+            removeTextureMesh(mesh, texture_type)
+            success_ls.append(mesh)
+        except Exception as e:
+            print(e)
+            failed_ls.append((mesh, e))
+
+    print(f'Success: ')
+    for i in success_ls:
+        print("    ", i)
+    print(f'Failed: ')
+    for i in failed_ls:
+        print("    ", i)
+    
+    if len(failed_ls) != 0:
+        raise Exception(f"Exception occured when removing textures '{texture_type}' from those meshes: {failed_ls}")
+    return

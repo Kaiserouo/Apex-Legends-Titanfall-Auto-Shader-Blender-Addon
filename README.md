@@ -10,6 +10,7 @@ For mesh and armatures, this addon can find and import all other textures based 
 `Right-click (on armature or mesh) > Apex Shader` to access the menu.
 
 **Make sure to `Apex Shader > Set Core Apex Shader blender file path` first, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
+> I used the blender shader file found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
 
 ## Notes
 + This will delete existing shader nodes from active material. Should use on newly imported model / material.

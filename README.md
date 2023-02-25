@@ -1,25 +1,81 @@
 # Apex Legends Auto Shader
 
-Blender addon that auto-shades Apex Legends characters.
+Blender addon that auto-shades Apex Legends characters. Currently supports:
++ Auto-shade (newly imported) model.
++ Use recolor materials to auto-shade model.
 
 ## How To Use
-Video: https://youtu.be/p-CK_bYSK4Y
+
+**Make sure to `Apex Shader > Set Core Apex Shader blender file path` before doing any shading, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
+> I used the blender shader file (credit CoReArtZz) found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
+> If that file link (Google Drive) is no longer available, make an issue on Github or leave a comment in the demo video regarding this.
+
+### Auto-Shade
+**Demonstration Video: https://youtu.be/p-CK_bYSK4Y**
 
 For mesh and armatures, this addon can find and import all other textures based on the auto-imported albedo texture.
 
 `Right-click (on armature or mesh) > Apex Shader` to access the menu.
 
-**Make sure to `Apex Shader > Set Core Apex Shader blender file path` first, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
-> I used the blender shader file found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
+All the textures (that can be procedurally shaded) will be auto-shaded, using the `Cores Apex Shader` from the blender shader file you specified earlier.
+
+### Remove Bad Texture
+**Demonstration Video: https://youtu.be/UTek2qXzxK8**
+
+If you want to omit some texture (e.g. `opacityMultiplierTexture`), you can select mesh / armature, and `Right-click > Apex Shader > Remove Texture From Selected Legends > Remove opacityMultiplyTexture`. The same goes to other kinds of texture.
+
+This can solve problems, such as removing `bloodhound_v21_heroknight_w` (Feral's Future legendary skin)'s `opacityMultiplierTexture` since the whole skin would look invisible with that texture applied.
+
+Refer to `Problem` section below for other use-cases.
+
+### Recolor
+**Demonstration Video: https://youtu.be/UTek2qXzxK8**
+
+You can auto-shade using a model's recolor materials exported from Legion+.
+
+For example, if you want to use Feral's Future (`bloodhound_v21_heroknight_w`)'s recolor: `bloodhound_lgnd_v21_heroknight_rt01`...
+
+1. Use Legion+ to export all related materials. After exporting, my folder structure looks like this:
+```
+Legion/
+└── exported_files\
+    └── materials\
+        ├── bloodhound_lgnd_v21_heroknight_rt01_body/
+        │   ├── bloodhound_lgnd_v21_heroknight_rt01_body_albedoTexture.png
+        │   └── ...
+        └── bloodhound_lgnd_v21_heroknight_rt01_gear/
+            ├── bloodhound_lgnd_v21_heroknight_rt01__albedoTexture.png
+            └── ...
+```
+2. Import the Feral's Future model
+3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`
+4. Select any **folder** related to the recolor, e.g. `Legion/exported_files/materials/bloodhound_lgnd_v21_heroknight_rt01_body/`. 
+    + Any one of the folder will do, the addon will automatically find the other folders related to this recolor.
+      + i.e. you can also choose `bloodhound_lgnd_v21_heroknight_rt01_gear/` if you want, the addon will still find both of them.
+    + **DO NOT CHOOSE FOLDERS LIKE `bloodhound_lgnd_v21_heroknight_rt01_body_colpass`**. The addon treats the last word as the mesh name, so it won't be able to find other related folders. The same goes with `prepass, shadow, tightshadow, vsm`. Choose folders that ends with mesh names like `body, gear, helmet, fur`, etc.
+5. Done. Enjoy.
+
+You can also recolor a mesh instead of an armature. In that case, the addon will use the selected folder's textures directly.
+
+## Installation
+Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semodel](https://github.com/dtzxporter/io_model_semodel)
+
+1. Clone this repository and zip it, or just download as zip file on Github. (`Code -> Download ZIP`)
+2. `Edit -> Preferences -> Add-ons -> Install..` and choose the zip file.
+3. Activate the addon by checking the box. 
+   + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).
+4. `Save Preferences`.
 
 ## Notes
-+ This will delete existing shader nodes from active material. Should use on newly imported model / material.
+Some details, tricks and warnings about the addon. You can skip it if you like.
+
++ **This will delete existing shader nodes from active material.** Should use on newly imported model / material.
 + FYI, This auto shader is done by getting the image directory by looking into material's `Image Texture`. Some requirements are:
   + (All armature's) mesh's active material have at least one `Image Texture` inside, and it should have a image file attached to it.
     + If there are multiple `Image Texture`, pick one randomly.
   + The `Image Texture`'s file path must be in the format auto-generated by Legion+.
     + e.g. `bloodhound_lgnd_v20_ascension_body_albedoTexture.png`, i.e. `<meshName>_<textureName>.<fileType>`
-    + That means unnamed texture files (e.g. `0x53237a2cdd03344e.png`) cannot be imported this way.
+    + That means **unnamed texture files (e.g. `0x53237a2cdd03344e.png`) cannot be imported this way.**
   + It will search through that directory (which the image file resides in) and import all similarly-named textures.
     + e.g. `bloodhound_lgnd_v20_ascension_body_cavityTexture.png`, i.e. `<meshName>_*` in wildcard.
 + If the auto-shading failed and the shader nodes are ruined, you can add one `Image Texture` satisfying the above condition and try to shade it again.
@@ -39,22 +95,14 @@ For mesh and armatures, this addon can find and import all other textures based 
 [X] anisoSpecDirTexture
 [X] transmittanceTintTexture
 [X] emissiveMultiplyTexture
+  -> Mostly animation-related so I don't really want to auto-import this. Make a github issue if you want to know how to use this texture.
 [X] uvDistortionTexture
 
 ... (there may be other textures not listed here)
 ```
 
-## Installation
-Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semodel](https://github.com/dtzxporter/io_model_semodel)
-
-1. Clone this repository and zip it, or just download as zip file on Github. (`Code -> Download ZIP`)
-2. `Edit -> Preferences -> Add-ons -> Install..` and choose the zip file.
-3. Activate the addon by checking the box. 
-   + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).
-4. `Save Preferences`.
-
 ## Problem
-Some of the problem that may occur. Do note that this is just a helper addon, you should check the result and modify shader nodes when needed.
+Some of the problem that may occur. **Do note that this is just a helper addon**, you should check the result and modify shader nodes when needed.
 
 + When shading `bloodhound_v21_heroknight_w` (Feral's Future legendary skin), the whole model would look invisible.
   + This is because their `opacityMultiplyTexture` is not like other model's opacity multiply texture, so the auto-shade method failed. This may also occur on other models.

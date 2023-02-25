@@ -61,11 +61,23 @@ from bpy import context
 
 def getCoreApexShaderNodeGroup():
     filepath = config.CORE_APEX_SHADER_BLENDER_FILE
+
+    # use cached node group for the same file if already loaded from file before
+    cached_group = getattr(getCoreApexShaderNodeGroup, 'cached_group', None)
+    cached_filepath = getattr(getCoreApexShaderNodeGroup, 'filepath', None)
+    if cached_group is not None and filepath == cached_filepath:
+        print('used cache node group')
+        return cached_group
+    
+    
+    print('import node group from file')
     with bpy.data.libraries.load(filepath) as (data_from, data_to):
         data_to.node_groups = data_from.node_groups
     # just return any core apex shader in there
     for group in data_to.node_groups:
         if 'Cores Apex Shader' in group.name:
+            getCoreApexShaderNodeGroup.cached_group = group
+            getCoreApexShaderNodeGroup.filepath = filepath
             return group
     else:
         raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
@@ -320,3 +332,76 @@ def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
     if len(failed_ls) != 0:
         raise Exception(f"Exception occured when removing textures '{texture_type}' from those meshes: {failed_ls}")
     return
+
+def recolorMesh(mesh: bpy.types.Object, dir_path: Path):
+    # dir_path: the directory where the textures of this material is stored
+    print(f'[*] recolorMesh({mesh}, {dir_path.stem} ({str(dir_path)}))')
+
+    # add new material for this recolor's mesh
+    mat = bpy.data.materials.new(name=f"{dir_path.stem}_material")
+    if mesh.data.materials:
+        mesh.data.materials[0] = mat
+    else:
+        mesh.data.materials.append(mat)
+    mesh.active_material = mat
+    mat.use_nodes = True   # to make node tree, or else mat.node_tree is None
+    nodes = mat.node_tree.nodes
+
+    # pick whatever image and use it as image node
+    img_path = next(dir_path.iterdir())
+    nodes.clear()
+    img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+    img_node.image = bpy.data.images.load(str(img_path))
+
+    # shadeMesh will use that image node and import other things
+    shadeMesh(mesh)
+
+def recolorArmature(armature: bpy.types.Object, dir_path: Path):
+    print(f'[*] recolorArmature({armature}, {dir_path})')
+    meshes = [obj for obj in armature.children if obj.type == 'MESH']
+
+    # make mapping from name of mesh to mesh
+    # name is derived from image texture path
+    mesh_name_map = {}
+    for mesh in meshes:
+        mat = mesh.active_material
+        nodes = mat.node_tree.nodes
+        img_texture = [node for node in nodes.values() if node.type == 'TEX_IMAGE'][0]
+        img_path = Path(bpy.path.abspath(img_texture.image.filepath))
+
+        # e.g. "bloodhound_lgnd_v21_chinatown_body_aoTexture.png" -> name = "body"
+        name = img_path.stem.split('_')[-2]
+        mesh_name_map[name] = mesh
+    
+    # find all similarly named directory and use them to recolor
+    success_ls = []
+    failed_ls = []
+    dir_name = dir_path.stem                        # e.g. "bloodhound_base_body"
+    recolor_name = dir_name[:dir_name.rindex('_')]  # e.g. "bloodhound_base"
+    for subdir_path in dir_path.parent.glob(recolor_name + '*'):
+        if not subdir_path.is_dir():
+            continue
+        if subdir_path.stem.count('_') != dir_name.count('_'):
+            # e.g. when choosing "bloodhound_lgnd_v21_heroknight_gear",
+            # cannot import "bloodhound_lgnd_v21_heroknight_rt01_body"
+            continue
+        name = subdir_path.stem.split('_')[-1]  # e.g. "bloodhound_base_fur" -> "fur"
+        if name in mesh_name_map:
+            try:
+                recolorMesh(mesh_name_map[name], subdir_path)
+                success_ls.append(mesh)
+            except Exception as e:
+                print(e)
+                failed_ls.append((mesh, e))
+    
+    print(f'Success: ')
+    for i in success_ls:
+        print("    ", i)
+    print(f'Failed: ')
+    for i in failed_ls:
+        print("    ", i)
+    
+    if len(failed_ls) != 0:
+        raise Exception(f"Exception occured when recoloring those meshes: {failed_ls}")
+    return
+        

@@ -1,6 +1,8 @@
 from . import utils, config
 import bpy
-from bpy_extras.io_utils import ImportHelper
+from bpy_extras.io_utils import ImportHelper, ExportHelper
+from bpy.props import StringProperty
+from pathlib import Path
 
 class ApexShadeActiveLegendOp(bpy.types.Operator):
     """Shade one active Apex Legend. Can select either mesh or armature. Only shades ONE object (the active one)."""
@@ -73,6 +75,35 @@ class ApexImportCASOp(bpy.types.Operator, ImportHelper):
 
         return{'FINISHED'}
 
+# https://blender.stackexchange.com/questions/14738/use-filemanager-to-select-directory-instead-of-file
+# note we are > 2.8
+class ApexImportRecolor(bpy.types.Operator):
+    """Import recolor"""
+    bl_idname = "apexaddon.import_recolor"
+    bl_label = "Import Recolor"
+    bl_options = {'REGISTER'}
+    directory: bpy.props.StringProperty(name="Directory", options={"HIDDEN"})
+    filter_folder: bpy.props.BoolProperty(default=True, options={"HIDDEN"})
+
+    def execute(self, context):
+        # chosen dir: `self.directory`
+        print("[ImportRecolor] Selected dir: '" + self.directory + "'")
+
+        obj = context.active_object
+        methods = {
+            'MESH': utils.recolorMesh,
+            'ARMATURE': utils.recolorArmature
+        }
+        if obj.type in methods:
+            methods[obj.type](obj, Path(self.directory))
+        else:
+            raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
 def makeRemoveTextureSelectedClass(texture_type):
     # NOTE: when registering class, bl_idname must only contain lower case w/o special chars
     # texture_type.lower() may not be enough
@@ -136,6 +167,7 @@ classes = (
     ApexShadeSelectedLegendWithoutOpacityOp,
     *remove_texture_class_ls,
     ApexRemoveTextureSubmenu,
+    ApexImportRecolor,
     ApexImportCASOp
 )
 
@@ -149,6 +181,7 @@ class Submenu(bpy.types.Menu):
         layout.operator(ApexShadeSelectedLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
         layout.menu(ApexRemoveTextureSubmenu.bl_idname)
+        layout.operator(ApexImportRecolor.bl_idname)
         layout.operator(ApexImportCASOp.bl_idname)
 
 

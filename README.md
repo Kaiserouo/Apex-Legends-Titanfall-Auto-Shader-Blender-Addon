@@ -2,13 +2,15 @@
 
 Blender addon that auto-shades Apex Legends characters. Currently supports:
 + Auto-shade (newly imported) model.
-+ Use recolor materials to auto-shade model.
++ Use recolor version of a skin to auto-shade model.
 
 ## How To Use
 
 **Make sure to `Apex Shader > Set Core Apex Shader blender file path` before doing any shading, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
 > I used the blender shader file (credit CoReArtZz) found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
 > If that file link (Google Drive) is no longer available, make an issue on Github or leave a comment in the demo video regarding this.
+
+**Do note that this is just a tool.** Learn how to shade legends manually before using this tool.
 
 ### Auto-Shade
 **Demonstration Video: https://youtu.be/p-CK_bYSK4Y**

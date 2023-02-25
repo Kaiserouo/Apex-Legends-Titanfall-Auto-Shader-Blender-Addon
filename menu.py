@@ -77,7 +77,7 @@ def makeRemoveTextureSelectedClass(texture_type):
     # NOTE: when registering class, bl_idname must only contain lower case w/o special chars
     # texture_type.lower() may not be enough
     class ApexRemoveTextureSelectedOp(bpy.types.Operator):
-        f"""Remove texture '{texture_type}' from all selected armature or mesh"""
+        # f"""Remove texture '{texture_type}' from all selected armature or mesh"""
         bl_idname = f"apexaddon.remove_texture_{texture_type.lower()}"
         bl_label = f"Remove {texture_type}"
         bl_options = {'REGISTER', 'UNDO'}
@@ -94,6 +94,11 @@ def makeRemoveTextureSelectedClass(texture_type):
                 else:
                     raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
             return {'FINISHED'}
+    
+    # in-class docstring cannot be f-string, or it will become None, so we set it here
+    # a bit hacky but it works...
+    ApexRemoveTextureSelectedOp.__doc__ = f"Remove texture '{texture_type}' from all selected armature or mesh"
+
     return ApexRemoveTextureSelectedOp
 
 removable_texture_ls = [

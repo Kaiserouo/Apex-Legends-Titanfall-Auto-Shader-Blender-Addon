@@ -9,6 +9,7 @@ Blender addon that auto-shades Apex Legends characters. Currently supports:
 **Make sure to `Apex Shader > Set Core Apex Shader blender file path` before doing any shading, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
 > I used the blender shader file (credit CoReArtZz) found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
 > If that file link (Google Drive) is no longer available, make an issue on Github or leave a comment in the demo video regarding this.
+> You can set the default path in `config.py`, so you don't have to set the path every time.
 
 **Do note that this is just a tool.** Learn how to shade legends manually before using this tool.
 
@@ -63,6 +64,7 @@ You can also recolor a mesh instead of an armature. In that case, the addon will
 Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semodel](https://github.com/dtzxporter/io_model_semodel)
 
 1. Clone this repository and zip it, or just download as zip file on Github. (`Code -> Download ZIP`)
+   + If you want to change the default path of blender shader file in `config.py`, use the former method.
 2. `Edit -> Preferences -> Add-ons -> Install..` and choose the zip file.
 3. Activate the addon by checking the box. 
    + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).

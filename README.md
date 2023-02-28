@@ -72,6 +72,8 @@ Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semo
    + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).
 4. `Save Preferences`.
 
+If you want to use newer version of this addon, uninstall the older version and do the above again. There's no cleaner way to update it to my knowledge.
+
 ## Notes
 Some details, tricks and warnings about the addon. You can skip it if you like.
 

@@ -1,8 +1,8 @@
 # Apex Legends Auto Shader
 
 Blender addon that auto-shades Apex Legends characters. Currently supports:
-+ Auto-shade (newly imported) model.
-+ Use recolor version of a skin to auto-shade model.
++ Auto-shade (newly imported) model('s active material).
++ Use recolor version of a skin to auto-shade model (and create new material for that recolor).
 
 ## How To Use
 
@@ -13,16 +13,18 @@ Blender addon that auto-shades Apex Legends characters. Currently supports:
 > 
 > You can set the default path in `config.py`, so you don't have to set the path every time.
 
-**Do note that this is just a tool.** Learn how to shade legends manually before using this tool.
+**Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
 
 ### Auto-Shade
 **Demonstration Video: https://youtu.be/p-CK_bYSK4Y**
 
 For mesh and armatures, this addon can find and import all other textures based on the auto-imported albedo texture.
 
-`Right-click (on armature or mesh) > Apex Shader` to access the menu.
+`Right-click (on armature or mesh) > Apex Shader` to access the menu, with options like `Shade Selected Legends`. Hover on the options to view detailed explanation.
 
 All the textures (that can be procedurally shaded) will be auto-shaded, using the `Cores Apex Shader` from the blender shader file you specified earlier.
+
+If you choose mesh then only that mesh will be shaded. If you choose armature then all associated meshes will be shaded. i.e. if you want to auto-shade the whole legend, choose their armature.
 
 ### Remove Bad Texture
 **Demonstration Video: https://youtu.be/UTek2qXzxK8**
@@ -43,8 +45,8 @@ For example, if you want to use Feral's Future (`bloodhound_v21_heroknight_w`)'s
 1. Use Legion+ to export all related materials. After exporting, my folder structure looks like this:
 ```
 Legion/
-└── exported_files\
-    └── materials\
+└── exported_files/
+    └── materials/
         ├── bloodhound_lgnd_v21_heroknight_rt01_body/
         │   ├── bloodhound_lgnd_v21_heroknight_rt01_body_albedoTexture.png
         │   └── ...
@@ -52,8 +54,8 @@ Legion/
             ├── bloodhound_lgnd_v21_heroknight_rt01__albedoTexture.png
             └── ...
 ```
-2. Import the Feral's Future model
-3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`
+2. Import the Feral's Future model.
+3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`.
 4. Select any **folder** related to the recolor, e.g. `Legion/exported_files/materials/bloodhound_lgnd_v21_heroknight_rt01_body/`. 
     + Any one of the folder will do, the addon will automatically find the other folders related to this recolor.
       + i.e. you can also choose `bloodhound_lgnd_v21_heroknight_rt01_gear/` if you want, the addon will still find both of them.

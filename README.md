@@ -1,26 +1,30 @@
 # Apex Legends Auto Shader
 
 Blender addon that auto-shades Apex Legends characters. Currently supports:
-+ Auto-shade (newly imported) model.
-+ Use recolor version of a skin to auto-shade model.
++ Auto-shade (newly imported) model('s active material).
++ Use recolor version of a skin to auto-shade model (and create new material for that recolor).
 
 ## How To Use
 
 **Make sure to `Apex Shader > Set Core Apex Shader blender file path` before doing any shading, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
 > I used the blender shader file (credit CoReArtZz) found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
+> 
 > If that file link (Google Drive) is no longer available, make an issue on Github or leave a comment in the demo video regarding this.
+> 
 > You can set the default path in `config.py`, so you don't have to set the path every time.
 
-**Do note that this is just a tool.** Learn how to shade legends manually before using this tool.
+**Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
 
 ### Auto-Shade
 **Demonstration Video: https://youtu.be/p-CK_bYSK4Y**
 
 For mesh and armatures, this addon can find and import all other textures based on the auto-imported albedo texture.
 
-`Right-click (on armature or mesh) > Apex Shader` to access the menu.
+`Right-click (on armature or mesh) > Apex Shader` to access the menu, with options like `Shade Selected Legends`. Hover on the options to view detailed explanation.
 
 All the textures (that can be procedurally shaded) will be auto-shaded, using the `Cores Apex Shader` from the blender shader file you specified earlier.
+
+If you choose mesh then only that mesh will be shaded. If you choose armature then all associated meshes will be shaded. i.e. if you want to auto-shade the whole legend, choose their armature.
 
 ### Remove Bad Texture
 **Demonstration Video: https://youtu.be/UTek2qXzxK8**
@@ -41,8 +45,8 @@ For example, if you want to use Feral's Future (`bloodhound_v21_heroknight_w`)'s
 1. Use Legion+ to export all related materials. After exporting, my folder structure looks like this:
 ```
 Legion/
-└── exported_files\
-    └── materials\
+└── exported_files/
+    └── materials/
         ├── bloodhound_lgnd_v21_heroknight_rt01_body/
         │   ├── bloodhound_lgnd_v21_heroknight_rt01_body_albedoTexture.png
         │   └── ...
@@ -50,8 +54,8 @@ Legion/
             ├── bloodhound_lgnd_v21_heroknight_rt01__albedoTexture.png
             └── ...
 ```
-2. Import the Feral's Future model
-3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`
+2. Import the Feral's Future model.
+3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`.
 4. Select any **folder** related to the recolor, e.g. `Legion/exported_files/materials/bloodhound_lgnd_v21_heroknight_rt01_body/`. 
     + Any one of the folder will do, the addon will automatically find the other folders related to this recolor.
       + i.e. you can also choose `bloodhound_lgnd_v21_heroknight_rt01_gear/` if you want, the addon will still find both of them.
@@ -69,6 +73,8 @@ Should be the same as any other addons on Github. ref. [dtzxporter/io_model_semo
 3. Activate the addon by checking the box. 
    + You might have to search the addon if it is not shown automatically. (by the string `apex` or `Apex Legends Auto Shader Addon`).
 4. `Save Preferences`.
+
+If you want to use newer version of this addon, uninstall the older version and do the above again. There's no cleaner way to update it to my knowledge.
 
 ## Notes
 Some details, tricks and warnings about the addon. You can skip it if you like.

@@ -38,7 +38,8 @@ class ApexShadeSelectedLegendOp(bpy.types.Operator):
             if obj.type in methods:
                 methods[obj.type](obj, do_check=False)
             else:
-                raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+                print(f'{obj} is not one of the following: {list(methods.keys())}')
+                # raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
         
 class ApexShadeSelectedLegendWithoutOpacityOp(bpy.types.Operator):
@@ -57,11 +58,12 @@ class ApexShadeSelectedLegendWithoutOpacityOp(bpy.types.Operator):
             if obj.type in methods:
                 methods[obj.type](obj, do_check=False, node_adder_cls=utils.NodeAdderWithoutOpacity)
             else:
-                raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+                print(f'{obj} is not one of the following: {list(methods.keys())}')
+                # raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
 
 class ApexImportCASOp(bpy.types.Operator, ImportHelper):
-    """Operator for setting Core Apex Shader blender file path."""
+    """Operator for setting Core Apex Shader blender file path. Need to set this before shading"""
 
     bl_idname = "apexaddon.set_cas_blend_file_path"
     bl_label = "Set Core Apex Shader blender file path"
@@ -123,7 +125,8 @@ def makeRemoveTextureSelectedClass(texture_type):
                 if obj.type in methods:
                     methods[obj.type](obj, texture_type)
                 else:
-                    raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+                    # raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+                    print(f'{obj} is not one of the following: {list(methods.keys())}')
             return {'FINISHED'}
     
     # in-class docstring cannot be f-string, or it will become None, so we set it here

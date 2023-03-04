@@ -257,7 +257,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
 
     # get path from image texture (should be .../<model_name>_<mesh_name>_<texture_name>.png)
     mesh_name = img_path.name[:img_path.name.rindex('_')]
-    texture_paths = img_path.parent.glob(mesh_name + '*')
+    texture_paths = img_path.parent.glob(mesh_name + '_*')
 
     # add all textures
     for i, texture_path in enumerate(texture_paths):

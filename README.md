@@ -6,12 +6,11 @@ Blender addon that auto-shades Apex Legends characters. Currently supports:
 
 ## How To Use
 
-**Make sure to `Apex Shader > Set Core Apex Shader blender file path` before doing any shading, to use the pre-existing `Cores Apex Shader` from `Apex Shader.blend` !**
-> I used the blender shader file (credit CoReArtZz) found in https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/
-> 
-> If that file link (Google Drive) is no longer available, make an issue on Github or leave a comment in the demo video regarding this.
-> 
-> You can set the default path in `config.py`, so you don't have to set the path every time.
+This addon needs a blender shader file (containing `Cores Apex Shader`) to work. If you don't have any special requirement, there is already a blender shader file contained inside the addon.
+
+> Most of the shading method and, most importantly, the blender shader file, is from [this reddit post](https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/). The blender shader file contained inside this addon: `asset/Apex Shader.blend` credits `CoReArtZz`.
+
+You can use your desired blender shader file by `Apex Shader > Set Core Apex Shader blender file path`, but **most of the time you don't have to set this. The default is to use the built-in shader file.**
 
 **Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
 
@@ -22,7 +21,7 @@ For mesh and armatures, this addon can find and import all other textures based 
 
 `Right-click (on armature or mesh) > Apex Shader` to access the menu, with options like `Shade Selected Legends`. Hover on the options to view detailed explanation.
 
-All the textures (that can be procedurally shaded) will be auto-shaded, using the `Cores Apex Shader` from the blender shader file you specified earlier.
+All the textures (that can be procedurally shaded) will be auto-shaded, using the `Cores Apex Shader` from the blender shader file.
 
 If you choose mesh then only that mesh will be shaded. If you choose armature then all associated meshes will be shaded. i.e. if you want to auto-shade the whole legend, choose their armature.
 

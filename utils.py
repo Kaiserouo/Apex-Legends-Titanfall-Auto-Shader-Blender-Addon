@@ -66,11 +66,11 @@ def getCoreApexShaderNodeGroup():
     cached_group = getattr(getCoreApexShaderNodeGroup, 'cached_group', None)
     cached_filepath = getattr(getCoreApexShaderNodeGroup, 'filepath', None)
     if cached_group is not None and filepath == cached_filepath:
-        print('used cache node group')
+        print(f'used cache node group: {filepath}')
         return cached_group
     
     
-    print('import node group from file')
+    print(f'import node group from file: {filepath}')
     with bpy.data.libraries.load(filepath) as (data_from, data_to):
         data_to.node_groups = data_from.node_groups
     # just return any core apex shader in there

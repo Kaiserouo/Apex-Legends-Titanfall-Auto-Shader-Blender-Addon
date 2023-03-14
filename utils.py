@@ -83,6 +83,12 @@ def getCoreApexShaderNodeGroup():
         raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
 
 class NodeAdder:
+    """
+        The class used for adding image shader nodes
+        Note that since the image texture might be removed by "Remove Texture",
+        you must guarentee that even if the image texture is directly removed,
+        the rest of nodes you add won't affect the outcome
+    """
     @staticmethod
     def _addAlbedo(img_path, mat, cas_node_group, location):
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
@@ -256,6 +262,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     links.new(cas_node_group.outputs[0], output_node.inputs[0])
 
     # get path from image texture (should be .../<model_name>_<mesh_name>_<texture_name>.png)
+    # (currently assume path.count("_") is the same for all texture in directory)
     mesh_name = img_path.name[:img_path.name.rindex('_')]
     texture_paths = img_path.parent.glob(mesh_name + '_*')
 
@@ -293,7 +300,7 @@ def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=Nod
     return
 
 def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
-    # remove texture
+    # remove texture (by directly removing that image texture)
     # e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
     # then texture_type = 'scatterThicknessTexture'
     print(f'[*] removeTextureMesh({mesh}, {texture_type})')

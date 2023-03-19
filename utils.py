@@ -249,6 +249,23 @@ class NodeAdderWithoutOpacity(NodeAdder):
     method.pop('opacityMultiplyTexture')
 
 class PathfinderEmoteNodeAdder(NodeAdder):
+    """
+        Translate UV map for emote's albedo texture to use different emote.
+        TextureCoordinate.UV + (x, y, 0) to access all 12 emotes, where
+        - x in [0, 0.25, 0.5, 0.75]
+        - y in [0, 0.375, 0.63]
+
+        The actual node group's specification are:
+
+        value = getValueInput()     # increment 0.1
+        v1 = truncate((value + 24) * 10)
+        x = (v1 % 4) * 0.25
+        v2 = truncate(v1 / 4) % 3
+        y = (v2 > 0.1) * 0.375 + (v2 > 1.1) * 0.255
+        output = getTexCoordUVInput() + (x, y, 0)
+
+        connect output to albedo texture's vector input.
+    """
     @staticmethod
     def _addAlbedo(img_path, mat, cas_node_group, location):
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')

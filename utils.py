@@ -82,6 +82,29 @@ def getCoreApexShaderNodeGroup():
     else:
         raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
 
+def getPathfinderUVTransformNodeGroup():
+    filepath = config.CORE_APEX_SHADER_BLENDER_FILE
+
+    # use cached node group for the same file if already loaded from file before
+    cached_group = getattr(getPathfinderUVTransformNodeGroup, 'cached_group', None)
+    cached_filepath = getattr(getPathfinderUVTransformNodeGroup, 'filepath', None)
+    if cached_group is not None and filepath == cached_filepath:
+        print(f'used cache node group: {filepath}')
+        return cached_group
+    
+    
+    print(f'import node group from file: {filepath}')
+    with bpy.data.libraries.load(filepath) as (data_from, data_to):
+        data_to.node_groups = data_from.node_groups
+    # just return any core apex shader in there
+    for group in data_to.node_groups:
+        if 'Pathfinder Emote UV Transform Node' in group.name:
+            getPathfinderUVTransformNodeGroup.cached_group = group
+            getPathfinderUVTransformNodeGroup.filepath = filepath
+            return group
+    else:
+        raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
+
 class NodeAdder:
     """
         The class used for adding image shader nodes
@@ -224,6 +247,40 @@ class NodeAdder:
 class NodeAdderWithoutOpacity(NodeAdder):
     method = NodeAdder.method.copy()
     method.pop('opacityMultiplyTexture')
+
+class PathfinderEmoteNodeAdder(NodeAdder):
+    @staticmethod
+    def _addAlbedo(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Albedo'])
+
+        path_node_group = mat.node_tree.nodes.new(type='ShaderNodeGroup')
+        path_node_group.node_tree = getPathfinderUVTransformNodeGroup()
+        path_node_group.hide = True
+        path_node_group.location = (-200 + location[0], location[1])
+
+        texture_coord_node = mat.node_tree.nodes.new(type='ShaderNodeTexCoord')
+        texture_coord_node.hide = True
+        texture_coord_node.location = (-400 + location[0], location[1] + 50)
+
+        value_node = mat.node_tree.nodes.new(type='ShaderNodeValue')
+        value_node.label = 'Value (Click its left & right button to rotate emote)'
+        value_node.width = 300
+        value_node.location = (-590 + location[0], location[1] - 50)
+
+        mat.node_tree.links.new(texture_coord_node.outputs['UV'], path_node_group.inputs[0])
+        mat.node_tree.links.new(value_node.outputs[0], path_node_group.inputs[1])
+
+        mat.node_tree.links.new(path_node_group.outputs[0], img_node.inputs[0])
+        return 
+
+
+
+    method = NodeAdder.method.copy()
+    method['albedoTexture'] = _addAlbedo
 
 def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     print(f"[*] shadeMesh({mesh})")
@@ -411,4 +468,4 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path):
     if len(failed_ls) != 0:
         raise Exception(f"Exception occured when recoloring those meshes: {failed_ls}")
     return
-        
+

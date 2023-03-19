@@ -106,6 +106,23 @@ class ApexImportRecolor(bpy.types.Operator):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
+class ApexShadePathfinderEmoteOp(bpy.types.Operator):
+    """Give a value node s.t. you can click its left & right to change Pathfinder's emote. Use this on emote mesh."""
+    bl_idname = "apexaddon.shade_pathfinder_emote"
+    bl_label = "Shade Pathfinder Emote"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+        methods = {
+            'MESH': utils.shadeMesh,
+        }
+        if obj.type in methods:
+            methods[obj.type](obj, do_check=False, node_adder_cls=utils.PathfinderEmoteNodeAdder)
+        else:
+            raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
+        return {'FINISHED'}
+
 def makeRemoveTextureSelectedClass(texture_type):
     # NOTE: when registering class, bl_idname must only contain lower case w/o special chars
     # texture_type.lower() may not be enough
@@ -171,6 +188,7 @@ classes = (
     *remove_texture_class_ls,
     ApexRemoveTextureSubmenu,
     ApexImportRecolor,
+    ApexShadePathfinderEmoteOp,
     ApexImportCASOp
 )
 
@@ -185,6 +203,7 @@ class Submenu(bpy.types.Menu):
         layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
         layout.menu(ApexRemoveTextureSubmenu.bl_idname)
         layout.operator(ApexImportRecolor.bl_idname)
+        layout.operator(ApexShadePathfinderEmoteOp.bl_idname)
         layout.operator(ApexImportCASOp.bl_idname)
 
 

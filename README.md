@@ -122,3 +122,5 @@ Some of the problem that may occur. **Do note that this is just a helper addon**
 + Octane's skin looked orange-ish.
   + Its `octane_base_body_scatterThicknessTexture` doesn't look like it is properly exported...?
   + Use `Remove Texture From Selected Legends > Remove scatterThicknessTexture` on armature to remove that texture if you want.
++ Pathfinder's lens is black.
+  + Just hide the lens' mesh altogether. The emission is on head.

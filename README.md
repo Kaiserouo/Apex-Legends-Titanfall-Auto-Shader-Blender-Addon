@@ -3,6 +3,8 @@
 Blender addon that auto-shades Apex Legends characters. Currently supports:
 + Auto-shade (newly imported) model('s active material).
 + Use recolor version of a skin to auto-shade model (and create new material for that recolor).
++ Pathfinder emote rotation toggle.
+  + Refer to description in blender and emote's shader node
 
 ## How To Use
 

@@ -83,7 +83,7 @@ def getCoreApexShaderNodeGroup():
         raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
 
 def getPathfinderUVTransformNodeGroup():
-    filepath = config.CORE_APEX_SHADER_BLENDER_FILE
+    filepath = config.BUILTIN_BLENDER_FILE
 
     # use cached node group for the same file if already loaded from file before
     cached_group = getattr(getPathfinderUVTransformNodeGroup, 'cached_group', None)

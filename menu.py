@@ -201,9 +201,18 @@ class Submenu(bpy.types.Menu):
         layout.operator(ApexShadeActiveLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
+
+        layout.separator()
+
         layout.menu(ApexRemoveTextureSubmenu.bl_idname)
+
+        layout.separator()
+
         layout.operator(ApexImportRecolor.bl_idname)
         layout.operator(ApexShadePathfinderEmoteOp.bl_idname)
+
+        layout.separator()
+        
         layout.operator(ApexImportCASOp.bl_idname)
 
 

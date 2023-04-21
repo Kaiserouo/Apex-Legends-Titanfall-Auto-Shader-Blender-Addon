@@ -58,6 +58,7 @@ import glob
 from pathlib import Path
 import bpy
 from bpy import context
+from collections import defaultdict
 
 def getCoreApexShaderNodeGroup():
     filepath = config.CORE_APEX_SHADER_BLENDER_FILE
@@ -353,25 +354,28 @@ def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=Nod
     success_ls = []
     failed_ls = []
 
-    for i, mesh in enumerate(meshes):
-        try:
-            print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
-            shadeMesh(mesh, do_check, node_adder_cls)
-            success_ls.append(mesh)
-        except Exception as e:
-            print(e)
-            failed_ls.append((mesh, e))
+    # for i, mesh in enumerate(meshes):
+    #     try:
+    #         print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
+    #         shadeMesh(mesh, do_check, node_adder_cls)
+    #         success_ls.append(mesh)
+    #     except Exception as e:
+    #         print(e)
+    #         failed_ls.append((mesh, e))
 
-    print(f'Success: ')
-    for i in success_ls:
-        print("    ", i)
-    print(f'Failed: ')
-    for i in failed_ls:
-        print("    ", i)
+    # print(f'Success: ')
+    # for i in success_ls:
+    #     print("    ", i)
+    # print(f'Failed: ')
+    # for i in failed_ls:
+    #     print("    ", i)
     
-    if len(failed_ls) != 0:
-        raise Exception(f"Exception occured when shading those meshes: {failed_ls}")
-    return
+    # if len(failed_ls) != 0:
+    #     raise Exception(f"Exception occured when shading those meshes: {failed_ls}")
+    # return
+    for i, mesh in enumerate(meshes):
+        print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
+        shadeMesh(mesh, do_check, node_adder_cls)
 
 def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
     # remove texture (by directly removing that image texture)
@@ -394,30 +398,45 @@ def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
     success_ls = []
     failed_ls = []
 
-    for i, mesh in enumerate(meshes):
-        try:
-            print(f"[Armature-Mesh {i}/{len(meshes)}] removing texture '{texture_type}' from mesh {mesh}...")
-            removeTextureMesh(mesh, texture_type)
-            success_ls.append(mesh)
-        except Exception as e:
-            print(e)
-            failed_ls.append((mesh, e))
+    # for i, mesh in enumerate(meshes):
+    #     try:
+    #         print(f"[Armature-Mesh {i}/{len(meshes)}] removing texture '{texture_type}' from mesh {mesh}...")
+    #         removeTextureMesh(mesh, texture_type)
+    #         success_ls.append(mesh)
+    #     except Exception as e:
+    #         print(e)
+    #         failed_ls.append((mesh, e))
 
-    print(f'Success: ')
-    for i in success_ls:
-        print("    ", i)
-    print(f'Failed: ')
-    for i in failed_ls:
-        print("    ", i)
+    # print(f'Shade Success: ')
+    # for i in success_ls:
+    #     print("    ", i)
+    # print(f'Shade Failed: ')
+    # for i in failed_ls:
+    #     print("    ", i)
     
-    if len(failed_ls) != 0:
-        raise Exception(f"Exception occured when removing textures '{texture_type}' from those meshes: {failed_ls}")
+    # if len(failed_ls) != 0:
+    #     raise Exception(f"Exception occured when removing textures '{texture_type}' from those meshes: {failed_ls}")
+    for i, mesh in enumerate(meshes):
+        print(f"[Armature-Mesh {i}/{len(meshes)}] removing texture '{texture_type}' from mesh {mesh}...")
+        removeTextureMesh(mesh, texture_type)
+        success_ls.append(mesh)
     return
 
 def recolorMesh(mesh: bpy.types.Object, dir_path: Path):
     # dir_path: the directory where the textures of this material is stored
     print(f'[*] recolorMesh({mesh}, {dir_path.stem} ({str(dir_path)}))')
 
+    # see if this texture is loaded
+    mat = bpy.data.materials.get(f"{dir_path.stem}_material")
+    if mat is not None:
+        # already have this texture, reuse it
+        if mesh.data.materials:
+            mesh.data.materials[0] = mat
+        else:
+            mesh.data.materials.append(mat)
+        mesh.active_material = mat
+        return
+    
     # add new material for this recolor's mesh
     mat = bpy.data.materials.new(name=f"{dir_path.stem}_material")
     if mesh.data.materials:
@@ -441,9 +460,10 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path):
     print(f'[*] recolorArmature({armature}, {dir_path})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
 
-    # make mapping from name of mesh to mesh
-    # name is derived from image texture path
-    mesh_name_map = {}
+    # make mapping from name of mesh to mesh, name is derived from image texture path
+    # note that one name may map to multiple texture,
+    # e.g. pilot_heavy_revenant_legendary_02, hand and body both uses body texture...
+    mesh_name_map = defaultdict(list)
     for mesh in meshes:
         mat = mesh.active_material
         nodes = mat.node_tree.nodes
@@ -452,11 +472,39 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path):
 
         # e.g. "bloodhound_lgnd_v21_chinatown_body_aoTexture.png" -> name = "body"
         name = img_path.stem.split('_')[-2]
-        mesh_name_map[name] = mesh
+        mesh_name_map[name].append(mesh)
     
     # find all similarly named directory and use them to recolor
-    success_ls = []
-    failed_ls = []
+    # success_ls = []
+    # failed_ls = []
+    # dir_name = dir_path.stem                        # e.g. "bloodhound_base_body"
+    # recolor_name = dir_name[:dir_name.rindex('_')]  # e.g. "bloodhound_base"
+    # for subdir_path in dir_path.parent.glob(recolor_name + '*'):
+    #     if not subdir_path.is_dir():
+    #         continue
+    #     if subdir_path.stem.count('_') != dir_name.count('_'):
+    #         # e.g. when choosing "bloodhound_lgnd_v21_heroknight_gear",
+    #         # cannot import "bloodhound_lgnd_v21_heroknight_rt01_body"
+    #         continue
+    #     name = subdir_path.stem.split('_')[-1]  # e.g. "bloodhound_base_fur" -> "fur"
+    #     if name in mesh_name_map:
+    #         try:
+    #             for mesh in mesh_name_map[name]:
+    #                 recolorMesh(mesh, subdir_path)
+    #                 success_ls.append(mesh)
+    #         except Exception as e:
+    #             print(e)
+    #             failed_ls.append((mesh, e))
+    
+    # print(f'Recolor Success: ')
+    # for i in success_ls:
+    #     print("    ", i)
+    # print(f'Recolor Failed: ')
+    # for i in failed_ls:
+    #     print("    ", i)
+    
+    # if len(failed_ls) != 0:
+    #     raise Exception(f"Exception occured when recoloring those meshes: {failed_ls}")
     dir_name = dir_path.stem                        # e.g. "bloodhound_base_body"
     recolor_name = dir_name[:dir_name.rindex('_')]  # e.g. "bloodhound_base"
     for subdir_path in dir_path.parent.glob(recolor_name + '*'):
@@ -468,21 +516,7 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path):
             continue
         name = subdir_path.stem.split('_')[-1]  # e.g. "bloodhound_base_fur" -> "fur"
         if name in mesh_name_map:
-            try:
-                recolorMesh(mesh_name_map[name], subdir_path)
-                success_ls.append(mesh)
-            except Exception as e:
-                print(e)
-                failed_ls.append((mesh, e))
-    
-    print(f'Success: ')
-    for i in success_ls:
-        print("    ", i)
-    print(f'Failed: ')
-    for i in failed_ls:
-        print("    ", i)
-    
-    if len(failed_ls) != 0:
-        raise Exception(f"Exception occured when recoloring those meshes: {failed_ls}")
+            for mesh in mesh_name_map[name]:
+                recolorMesh(mesh, subdir_path)
     return
 

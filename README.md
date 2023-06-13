@@ -122,7 +122,7 @@ Some of the problem that may occur. **Do note that this is just a helper addon**
 
 + When shading `bloodhound_v21_heroknight_w` (Feral's Future legendary skin), the whole model would look invisible.
   + This is because their `opacityMultiplyTexture` is not like other model's opacity multiply texture, so the auto-shade method failed. This may also occur on other models.
-  + Use option `Shade Selected Apex Legend (Without Opacity Multiplier)` instead, or if you already auto-shaded, use `Remove Texture From Selected Legends > Remove opacityMultiplyTexture` on armature.
+  + Use `Remove Texture From Selected Legends > Remove opacityMultiplyTexture` on armature.
 + When shading a lot of meshes all at once, blender may stop responding.
   + This is normal, it's just the addon took too long processing those textures. **DON'T CLOSE BLENDER** and wait a while longer, it will be good soon enough... (or do close blender if you give up waiting.)
   + Open console before shading (`Window > Toggle System Console`) to track progress.

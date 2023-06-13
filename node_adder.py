@@ -217,6 +217,27 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
         connect output to albedo texture's vector input.
     """
     @staticmethod
+    def getPathfinderUVTransformNodeGroup():
+        filepath = config.BUILTIN_BLENDER_FILE
+
+        # use cached node group for the same file if already loaded from file before
+        cached_group = getattr(PathfinderEmoteNodeAdder, 'cached_pf_group', None)
+        if cached_group is not None:
+            print(f'used cache node group: {filepath}')
+            return cached_group
+        
+        
+        print(f'import node group from file: {filepath}')
+        with bpy.data.libraries.load(filepath) as (data_from, data_to):
+            data_to.node_groups = data_from.node_groups
+        for group in data_to.node_groups:
+            if 'Pathfinder Emote UV Transform Node' in group.name:
+                PathfinderEmoteNodeAdder.cached_pf_group = group
+                return group
+        else:
+            raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
+        
+    @staticmethod
     def _addAlbedo(img_path, mat, cas_node_group, location):
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
         img_node.hide = True
@@ -244,26 +265,6 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
         mat.node_tree.links.new(path_node_group.outputs[0], img_node.inputs[0])
         return 
 
-    @staticmethod
-    def getPathfinderUVTransformNodeGroup():
-        filepath = config.BUILTIN_BLENDER_FILE
-
-        # use cached node group for the same file if already loaded from file before
-        cached_group = getattr(PathfinderEmoteNodeAdder, 'cached_group', None)
-        if cached_group is not None:
-            print(f'used cache node group: {filepath}')
-            return cached_group
-        
-        
-        print(f'import node group from file: {filepath}')
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.node_groups = data_from.node_groups
-        for group in data_to.node_groups:
-            if 'Pathfinder Emote UV Transform Node' in group.name:
-                PathfinderEmoteNodeAdder.cached_group = group
-                return group
-        else:
-            raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
 
     method = CoresNodeAdder.method.copy()
     method['albedoTexture'] = _addAlbedo

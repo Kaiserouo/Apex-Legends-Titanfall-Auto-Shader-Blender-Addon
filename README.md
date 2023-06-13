@@ -3,22 +3,23 @@
 Blender addon that auto-shades Apex Legends characters, as well as other functions related to shading.
 
 Currently supports:
-+ One click to auto-shade (newly imported) model('s active material).
-+ Use recolor version of a skin to auto-shade model (and create new material for that recolor).
++ One click to auto-shade model's active material.
++ Use recolor version of a skin to auto-shade model (by creating new material for that recolor).
 + Pathfinder emote rotation toggle.
   + Gives Pathfinder's emote mesh a value shader node, which can change Pathfinder's emote on value changed (e.g. by clicking left & right).
 
 ## How To Use
 
-This addon needs a blender shader file (containing `Cores Apex Shader`) to work. If you don't have any special requirement, there is already a blender shader file contained inside the addon.
+There are different Apex Shaders on the Internet. We implemented some of them, and you can choose which one to use by `Apex Shader > Choose Shader`. The currently selected shader will be marked `(selected)` in the menu.
 
-> Most of the shading method and, most importantly, the blender shader file, is from [this reddit post](https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/). The blender shader file contained inside this addon: `asset/Apex Shader.blend` credits `CoReArtZz`.
-> 
-> `asset/Apex Shader.blend` is further modified to add other node groups made by me.
+The implemented shader is listed below. **Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
 
-You can use your desired blender shader file by `Apex Shader > Set Core Apex Shader blender file path`, but **most of the time you don't have to set this. The default is to use the built-in shader file.**
-
-**Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
++ `Cores Apex Shader`: From [this reddit post](https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/). Credits `CoReArtZz`. 
+  + Default. (There is a lot of tutorials regarding this one.)
++ `Apex Shader Plus 1`: From [ovlack/apex-info](https://github.com/ovlack/apex-info). 
+  + Seems to shader better on guns and human skin than Cores Apex Shader.
+  + Sometimes the overall style looks completely different (e.g. `bloodhound_v21_pilot_level03`). Refer to [here](https://github.com/Kaiserouo/Apex-Legends-Auto-Shader-Blender-Addon/pull/1) for more discussions.
+  + Opacity multiply only works under Cycles but not Eevee.
 
 ### Auto-Shade
 **Demonstration Video: https://youtu.be/p-CK_bYSK4Y**

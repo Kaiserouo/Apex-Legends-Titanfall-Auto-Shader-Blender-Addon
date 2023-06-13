@@ -58,7 +58,7 @@ import glob
 from pathlib import Path
 from bpy import context
 from collections import defaultdict
-from node_adder import *
+from .node_adder import *
 
 
 

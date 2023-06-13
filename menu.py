@@ -3,6 +3,9 @@ import bpy
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from bpy.props import StringProperty
 from pathlib import Path
+from .node_adder import *
+
+CURRENT_NODEADDER = CoresNodeAdder
 
 class ApexShadeActiveLegendOp(bpy.types.Operator):
     """Shade one active Apex Legend. Can select either mesh or armature. Only shades ONE object (the active one)."""
@@ -17,7 +20,7 @@ class ApexShadeActiveLegendOp(bpy.types.Operator):
             'ARMATURE': utils.shadeArmature
         }
         if obj.type in methods:
-            methods[obj.type](obj)
+            methods[obj.type](obj, CURRENT_NODEADDER)
         else:
             raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
@@ -36,46 +39,11 @@ class ApexShadeSelectedLegendOp(bpy.types.Operator):
         for i, obj in enumerate(context.selected_objects):
             print(f'[ShadeAll {i}/{len(context.selected_objects)}] {obj}')
             if obj.type in methods:
-                methods[obj.type](obj, do_check=False)
+                methods[obj.type](obj, CURRENT_NODEADDER)
             else:
                 print(f'{obj} is not one of the following: {list(methods.keys())}')
                 # raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
-        
-class ApexShadeSelectedLegendWithoutOpacityOp(bpy.types.Operator):
-    """Shade all selected Apex Legends, but don't use opacity multiplier"""
-    bl_idname = "apexaddon.shade_selected_legend_without_opacity"
-    bl_label = "Shade Selected Apex Legend (Without Opacity Multiplier)"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        methods = {
-            'MESH': utils.shadeMesh,
-            'ARMATURE': utils.shadeArmature
-        }
-        for i, obj in enumerate(context.selected_objects):
-            print(f'[ShadeAllWithoutOpacity {i}/{len(context.selected_objects)}] {obj}')
-            if obj.type in methods:
-                methods[obj.type](obj, do_check=False, node_adder_cls=utils.NodeAdderWithoutOpacity)
-            else:
-                print(f'{obj} is not one of the following: {list(methods.keys())}')
-                # raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
-        return {'FINISHED'}
-
-class ApexImportCASOp(bpy.types.Operator, ImportHelper):
-    """Operator for setting Core Apex Shader blender file path. Need to set this before shading"""
-
-    bl_idname = "apexaddon.set_cas_blend_file_path"
-    bl_label = "Set Core Apex Shader blender file path"
-
-    filename_ext = ".blend"
-    use_filter_folder = True
-
-    def execute(self, context):
-        filepath = self.properties.filepath
-        config.CORE_APEX_SHADER_BLENDER_FILE = filepath
-
-        return{'FINISHED'}
 
 # https://blender.stackexchange.com/questions/14738/use-filemanager-to-select-directory-instead-of-file
 # note we are > 2.8
@@ -97,7 +65,7 @@ class ApexImportRecolor(bpy.types.Operator):
             'ARMATURE': utils.recolorArmature
         }
         if obj.type in methods:
-            methods[obj.type](obj, Path(self.directory))
+            methods[obj.type](obj, Path(self.directory), CURRENT_NODEADDER)
         else:
             raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
@@ -118,10 +86,12 @@ class ApexShadePathfinderEmoteOp(bpy.types.Operator):
             'MESH': utils.shadeMesh,
         }
         if obj.type in methods:
-            methods[obj.type](obj, do_check=False, node_adder_cls=utils.PathfinderEmoteNodeAdder)
+            methods[obj.type](obj, node_adder_cls=PathfinderEmoteNodeAdder)
         else:
             raise Exception(f'{obj} is not one of the following: {list(methods.keys())}')
         return {'FINISHED'}
+
+# ---
 
 def makeRemoveTextureSelectedClass(texture_type):
     # NOTE: when registering class, bl_idname must only contain lower case w/o special chars
@@ -179,17 +149,67 @@ class ApexRemoveTextureSubmenu(bpy.types.Menu):
             layout.operator(rm_cls.bl_idname)
 
 # ---
+
+def makeChooseShaderOptionOperator(idname, display_name, node_adder_cls_arg, description):
+    # idname should only contain alphanumeric & underlines
+    class ApexChooseShaderOptionOp(bpy.types.Operator):
+        bl_idname = f"apexaddon.choose_shader_{idname.lower()}"
+        bl_label = display_name
+        bl_options = {'REGISTER'}
+
+        node_adder_cls = node_adder_cls_arg     # vscode complains if names are the same
+
+        def execute(self, context):
+            global CURRENT_NODEADDER
+            CURRENT_NODEADDER = self.node_adder_cls
+            print(f'Current node adder is {CURRENT_NODEADDER}')
+            return {'FINISHED'}
+    
+    ApexChooseShaderOptionOp.__doc__ = description
+    return ApexChooseShaderOptionOp
+
+# Add available shaders / NodeAdder class here
+available_shaders = [
+    # (idname, display_name, node_adder_cls, description)
+    ('cores', 'Cores Apex Shader', CoresNodeAdder, ''),
+    ('plus', 'Apex Shader Plus 1', PlusNodeAdder, ''),
+]
+
+shader_op_ls = [
+    makeChooseShaderOptionOperator(idname, display_name, node_adder_cls, description)
+    for idname, display_name, node_adder_cls, description in available_shaders
+]
+
+class ApexChooseShaderSubmenu(bpy.types.Menu):
+    """ 
+        The menu to choose shader / node adder to use.
+        The selected node adder class will be in CURRENT_NODEADDER.
+    """
+    bl_idname = "OBJECT_MT_apex_choose_shader_submenu"
+    bl_label = "Choose Shader"
+    bl_description = "Choose the shader you want to use"
+    
+    def draw(self, context):
+        layout = self.layout
+        for shader_op_cls in shader_op_ls:
+            if CURRENT_NODEADDER == shader_op_cls.node_adder_cls:
+                layout.operator(shader_op_cls.bl_idname, text=f"{shader_op_cls.bl_label} (selected)")
+            else:
+                layout.operator(shader_op_cls.bl_idname)
+            
+
+# ---
 # class contains everything that is not a submenu
 # used for (un)registering
 classes = (
     ApexShadeActiveLegendOp,
     ApexShadeSelectedLegendOp,
-    ApexShadeSelectedLegendWithoutOpacityOp,
     *remove_texture_class_ls,
     ApexRemoveTextureSubmenu,
     ApexImportRecolor,
     ApexShadePathfinderEmoteOp,
-    ApexImportCASOp
+    *shader_op_ls,
+    ApexChooseShaderSubmenu
 )
 
 class Submenu(bpy.types.Menu):
@@ -200,7 +220,6 @@ class Submenu(bpy.types.Menu):
         layout = self.layout
         layout.operator(ApexShadeActiveLegendOp.bl_idname)
         layout.operator(ApexShadeSelectedLegendOp.bl_idname)
-        layout.operator(ApexShadeSelectedLegendWithoutOpacityOp.bl_idname)
 
         layout.separator()
 
@@ -212,9 +231,8 @@ class Submenu(bpy.types.Menu):
         layout.operator(ApexShadePathfinderEmoteOp.bl_idname)
 
         layout.separator()
-        
-        layout.operator(ApexImportCASOp.bl_idname)
 
+        layout.menu(ApexChooseShaderSubmenu.bl_idname)
 
 def menu_func(self, context):
     layout = self.layout

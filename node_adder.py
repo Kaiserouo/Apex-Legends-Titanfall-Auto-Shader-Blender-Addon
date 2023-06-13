@@ -2,29 +2,6 @@ import bpy
 from . import config
 from pathlib import Path
 
-def getPathfinderUVTransformNodeGroup():
-    filepath = config.BUILTIN_BLENDER_FILE
-
-    # use cached node group for the same file if already loaded from file before
-    cached_group = getattr(getPathfinderUVTransformNodeGroup, 'cached_group', None)
-    cached_filepath = getattr(getPathfinderUVTransformNodeGroup, 'filepath', None)
-    if cached_group is not None and filepath == cached_filepath:
-        print(f'used cache node group: {filepath}')
-        return cached_group
-    
-    
-    print(f'import node group from file: {filepath}')
-    with bpy.data.libraries.load(filepath) as (data_from, data_to):
-        data_to.node_groups = data_from.node_groups
-    # just return any core apex shader in there
-    for group in data_to.node_groups:
-        if 'Pathfinder Emote UV Transform Node' in group.name:
-            getPathfinderUVTransformNodeGroup.cached_group = group
-            getPathfinderUVTransformNodeGroup.filepath = filepath
-            return group
-    else:
-        raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
-
 class NodeAdder:
     """
         The class used for adding image shader nodes
@@ -217,6 +194,9 @@ class CoresNodeAdder(NodeAdder):
         # add texture
         cls.method[texture_name](img_path, mat, cas_node_group, location)
         return True
+        
+class PlusNodeAdder(NodeAdder):
+    pass
 
 class PathfinderEmoteNodeAdder(CoresNodeAdder):
     """
@@ -285,5 +265,5 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
         else:
             raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
 
-    method = super().method.copy()
+    method = CoresNodeAdder.method.copy()
     method['albedoTexture'] = _addAlbedo

@@ -56,271 +56,19 @@ import bpy
 from . import config
 import glob
 from pathlib import Path
-import bpy
 from bpy import context
 from collections import defaultdict
-
-def getCoreApexShaderNodeGroup():
-    filepath = config.CORE_APEX_SHADER_BLENDER_FILE
-
-    # use cached node group for the same file if already loaded from file before
-    cached_group = getattr(getCoreApexShaderNodeGroup, 'cached_group', None)
-    cached_filepath = getattr(getCoreApexShaderNodeGroup, 'filepath', None)
-    if cached_group is not None and filepath == cached_filepath:
-        print(f'used cache node group: {filepath}')
-        return cached_group
-    
-    
-    print(f'import node group from file: {filepath}')
-    with bpy.data.libraries.load(filepath) as (data_from, data_to):
-        data_to.node_groups = data_from.node_groups
-    # just return any core apex shader in there
-    for group in data_to.node_groups:
-        if 'Cores Apex Shader' in group.name:
-            getCoreApexShaderNodeGroup.cached_group = group
-            getCoreApexShaderNodeGroup.filepath = filepath
-            return group
-    else:
-        raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
-
-def getPathfinderUVTransformNodeGroup():
-    filepath = config.BUILTIN_BLENDER_FILE
-
-    # use cached node group for the same file if already loaded from file before
-    cached_group = getattr(getPathfinderUVTransformNodeGroup, 'cached_group', None)
-    cached_filepath = getattr(getPathfinderUVTransformNodeGroup, 'filepath', None)
-    if cached_group is not None and filepath == cached_filepath:
-        print(f'used cache node group: {filepath}')
-        return cached_group
-    
-    
-    print(f'import node group from file: {filepath}')
-    with bpy.data.libraries.load(filepath) as (data_from, data_to):
-        data_to.node_groups = data_from.node_groups
-    # just return any core apex shader in there
-    for group in data_to.node_groups:
-        if 'Pathfinder Emote UV Transform Node' in group.name:
-            getPathfinderUVTransformNodeGroup.cached_group = group
-            getPathfinderUVTransformNodeGroup.filepath = filepath
-            return group
-    else:
-        raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
-
-class NodeAdder:
-    """
-        The class used for adding image shader nodes
-        Note that since the image texture might be removed by "Remove Texture",
-        you must guarentee that even if the image texture is directly removed,
-        the rest of nodes you add won't affect the outcome
-    """
-    @staticmethod
-    def _addAlbedo(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Albedo'])
-
-    @staticmethod
-    def _addNormal(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        img_node.image.colorspace_settings.name = 'Non-Color'
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Normal'])
-
-    @staticmethod
-    def _addAO(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['AO'])
-
-    @staticmethod
-    def _addGlossy(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Glossy'])
-
-    @staticmethod
-    def _addEmmisive(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Emission'])
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Emission Color'])
-    
-    @staticmethod
-    def _addCavity(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Cavity'])
-
-    @staticmethod
-    def _addSpec(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Specular'])
-
-    @staticmethod
-    def _addSubsurface(img_path, mat, cas_node_group, location):
-        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Subsurface'])
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Subsurface Color'])
-    
-    @staticmethod
-    def _addAnisoSpecDir(img_path, mat, cas_node_group, location):
-        pass
-    
-    @staticmethod
-    def _addTransmittanceTint(img_path, mat, cas_node_group, location):
-        pass
-    
-    @staticmethod
-    def _addOpacityMultiply(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-
-        transparent_node = mat.node_tree.nodes.new(type='ShaderNodeBsdfTransparent')
-        transparent_node.location = (200, 200)
-        
-        mix_shader_node = mat.node_tree.nodes.new(type='ShaderNodeMixShader')
-        mix_shader_node.inputs[0].default_value = 1     # so if there's no image node as input it is no-op
-        mix_shader_node.location = (400, 200)
-
-        # find output node
-        output_node = [node for node in mat.node_tree.nodes.values() if node.type == 'OUTPUT_MATERIAL'][0]
-
-        # ref. https://youtu.be/dMqk0jz749U?t=1108
-        img_node.image.colorspace_settings.name = 'Non-Color'
-        mat.node_tree.links.new(img_node.outputs['Color'], mix_shader_node.inputs[0])
-        mat.node_tree.links.new(transparent_node.outputs[0], mix_shader_node.inputs[1])
-
-        # should actually take whatever is linked to output_node.inputs['Surface'] as input
-        # but may not be the best to assume that. oh well.
-        mat.node_tree.links.new(cas_node_group.outputs[0], mix_shader_node.inputs[2])
-        mat.node_tree.links.new(mix_shader_node.outputs[0], output_node.inputs['Surface'])
-        mat.blend_method = 'CLIP'
-        
-    
-    method = {
-        'albedoTexture': _addAlbedo,
-        'aoTexture': _addAO,
-        'cavityTexture': _addCavity,
-        'emissiveTexture': _addEmmisive,
-        'glossTexture': _addGlossy,
-        'normalTexture': _addNormal,
-        'specTexture': _addSpec,
-        'opacityMultiplyTexture': _addOpacityMultiply,
-        'scatterThicknessTexture': _addSubsurface,
-
-        # those are things I don't even know how to deal with
-        # (or so hard to deal with I just quitted)
-        'anisoSpecDirTexture': _addAnisoSpecDir,
-        'transmittanceTintTexture': _addTransmittanceTint,
-    }
-
-    @classmethod
-    def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):
-        # get name
-        texture_name = img_path.stem[img_path.stem.rindex('_')+1:]
-        if texture_name not in cls.method.keys():
-            return False
-        # add texture
-        cls.method[texture_name](img_path, mat, cas_node_group, location)
-        return True
-
-class NodeAdderWithoutOpacity(NodeAdder):
-    method = NodeAdder.method.copy()
-    method.pop('opacityMultiplyTexture')
-
-class PathfinderEmoteNodeAdder(NodeAdder):
-    """
-        Translate UV map for emote's albedo texture to use different emote.
-        TextureCoordinate.UV + (x, y, 0) to access all 12 emotes, where
-        - x in [0, 0.25, 0.5, 0.75]
-        - y in [0, 0.375, 0.63]
-
-        The actual node group's specification are:
-
-        value = getValueInput()     # increment 0.1
-        v1 = truncate((value + 24) * 10)
-        x = (v1 % 4) * 0.25
-        v2 = truncate(v1 / 4) % 3
-        y = (v2 > 0.1) * 0.375 + (v2 > 1.1) * 0.255
-        output = getTexCoordUVInput() + (x, y, 0)
-
-        connect output to albedo texture's vector input.
-    """
-    @staticmethod
-    def _addAlbedo(img_path, mat, cas_node_group, location):
-        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
-        img_node.hide = True
-        img_node.location = location
-        img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Albedo'])
-
-        path_node_group = mat.node_tree.nodes.new(type='ShaderNodeGroup')
-        path_node_group.node_tree = getPathfinderUVTransformNodeGroup()
-        path_node_group.hide = True
-        path_node_group.location = (-200 + location[0], location[1])
-
-        texture_coord_node = mat.node_tree.nodes.new(type='ShaderNodeTexCoord')
-        texture_coord_node.hide = True
-        texture_coord_node.location = (-400 + location[0], location[1] + 50)
-
-        value_node = mat.node_tree.nodes.new(type='ShaderNodeValue')
-        value_node.label = 'Value (Click its left & right button to rotate emote)'
-        value_node.width = 300
-        value_node.location = (-590 + location[0], location[1] - 50)
-
-        mat.node_tree.links.new(texture_coord_node.outputs['UV'], path_node_group.inputs[0])
-        mat.node_tree.links.new(value_node.outputs[0], path_node_group.inputs[1])
-
-        mat.node_tree.links.new(path_node_group.outputs[0], img_node.inputs[0])
-        return 
+from node_adder import *
 
 
 
-    method = NodeAdder.method.copy()
-    method['albedoTexture'] = _addAlbedo
-
-def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
+def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
     print(f"[*] shadeMesh({mesh})")
     mat = mesh.active_material
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
 
-    if do_check:
-        # make sure this is the default one
-        # i.e. only has Principled BSDF, Material Output, and Image Texture from _image/
-
-        # i.e. only 3 things inside...
-        if len(nodes.keys()) != 3:
-            raise Exception(f'Should have 3 nodes only, but have {len(nodes.keys())}: {nodes.keys()}')
-        
-        # ...and its types are correct
-        node_types = [node.type for node in nodes.values()]
-        if set(['BSDF_PRINCIPLED', 'OUTPUT_MATERIAL', 'TEX_IMAGE']) != set(node_types):
-            raise Exception(f"Should have type {set(['BSDF_PRINCIPLED', 'OUTPUT_MATERIAL', 'TEX_IMAGE'])}, but have {set(node_types)}")
-    
-    # whatever the case is, take any Image Texture available
-    # (if did the check then must exist, otherwise might not exist...)
+    # take any Image Texture available
     img_texture = [node for node in nodes.values() if node.type == 'TEX_IMAGE'][0]
     # (blender use leading double slash `//` as relpath. use bpy first to make it absolute for pathlib)
     img_path = Path(bpy.path.abspath(img_texture.image.filepath))
@@ -330,7 +78,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     
     # make some nodes
     cas_node_group = nodes.new(type='ShaderNodeGroup')
-    cas_node_group.node_tree = getCoreApexShaderNodeGroup()
+    cas_node_group.node_tree = node_adder_cls.getShaderNodeGroup()
     cas_node_group.location = (400.0, 0.0)
     output_node = nodes.new(type='ShaderNodeOutputMaterial')
     output_node.location = (700.0, 0.0)
@@ -348,7 +96,7 @@ def shadeMesh(mesh: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
     
     return
 
-def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=NodeAdder):
+def shadeArmature(armature: bpy.types.Object, node_adder_cls=NodeAdder):
     print(f'[*] shadeArmature({armature})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
     success_ls = []
@@ -375,17 +123,20 @@ def shadeArmature(armature: bpy.types.Object, do_check=False, node_adder_cls=Nod
     # return
     for i, mesh in enumerate(meshes):
         print(f'[Armature-Mesh {i}/{len(meshes)}] shading mesh {mesh}...')
-        shadeMesh(mesh, do_check, node_adder_cls)
+        shadeMesh(mesh, node_adder_cls)
 
 def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
-    # remove texture (by directly removing that image texture)
-    # e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
-    # then texture_type = 'scatterThicknessTexture'
+    """
+        remove texture (by directly removing that image texture)
+        # e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
+        # then texture_type = 'scatterThicknessTexture'
+    """
     print(f'[*] removeTextureMesh({mesh}, {texture_type})')
     mat = mesh.active_material
     nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
+
     img_textures = [node for node in nodes.values() if node.type == 'TEX_IMAGE']
+
     for img_texture in img_textures:
         img_path = Path(bpy.path.abspath(img_texture.image.filepath))
         if img_path.stem[img_path.stem.rindex('_')+1:] == texture_type:
@@ -422,11 +173,15 @@ def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
         success_ls.append(mesh)
     return
 
-def recolorMesh(mesh: bpy.types.Object, dir_path: Path):
-    # dir_path: the directory where the textures of this material is stored
+def recolorMesh(mesh: bpy.types.Object, dir_path: Path, node_adder_cls: NodeAdder):
+    """
+        make a recolor material for the mesh, using the materials from `dir_path`
+
+        dir_path: the directory where the textures of this material is stored
+    """
     print(f'[*] recolorMesh({mesh}, {dir_path.stem} ({str(dir_path)}))')
 
-    # see if this texture is loaded
+    # see if this texture is loaded already
     mat = bpy.data.materials.get(f"{dir_path.stem}_material")
     if mat is not None:
         # already have this texture, reuse it
@@ -454,15 +209,15 @@ def recolorMesh(mesh: bpy.types.Object, dir_path: Path):
     img_node.image = bpy.data.images.load(str(img_path))
 
     # shadeMesh will use that image node and import other things
-    shadeMesh(mesh)
+    shadeMesh(mesh, node_adder_cls)
 
-def recolorArmature(armature: bpy.types.Object, dir_path: Path):
+def recolorArmature(armature: bpy.types.Object, dir_path: Path, node_adder_cls: NodeAdder):
     print(f'[*] recolorArmature({armature}, {dir_path})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
 
     # make mapping from name of mesh to mesh, name is derived from image texture path
-    # note that one name may map to multiple texture,
-    # e.g. pilot_heavy_revenant_legendary_02, hand and body both uses body texture...
+    # note that one name may map to multiple mesh,
+    # e.g. in pilot_heavy_revenant_legendary_02, mesh `hand` and `body` both uses `body` texture...
     mesh_name_map = defaultdict(list)
     for mesh in meshes:
         mat = mesh.active_material
@@ -517,6 +272,5 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path):
         name = subdir_path.stem.split('_')[-1]  # e.g. "bloodhound_base_fur" -> "fur"
         if name in mesh_name_map:
             for mesh in mesh_name_map[name]:
-                recolorMesh(mesh, subdir_path)
+                recolorMesh(mesh, subdir_path, node_adder_cls)
     return
-

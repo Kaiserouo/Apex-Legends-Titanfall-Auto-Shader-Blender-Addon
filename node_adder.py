@@ -196,7 +196,152 @@ class CoresNodeAdder(NodeAdder):
         return True
         
 class PlusNodeAdder(NodeAdder):
-    pass
+    """
+        Apex Shader Plus from `Apex_Shader_Plus1.blend`
+        credits `unknown` 
+        ref. https://github.com/ovlack/apex-info/commit/a9ec3ff2fab88546b8f91c1d62fd399652fe23c2/
+    """
+
+    @staticmethod
+    def _addAlbedo(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Albedo'])
+
+    @staticmethod
+    def _addNormal(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        img_node.image.colorspace_settings.name = 'Non-Color'
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Normal Map'])
+
+    @staticmethod
+    def _addAO(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['AO (Ambient Occlussion)'])
+
+    @staticmethod
+    def _addGlossy(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Glossiness'])
+
+    @staticmethod
+    def _addEmmisive(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Emission'])
+    
+    @staticmethod
+    def _addCavity(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Cavity'])
+
+    @staticmethod
+    def _addSpec(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Specular'])
+
+    @staticmethod
+    def _addSubsurface(img_path, mat, cas_node_group, location):
+        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['SSS (Subsurface Scattering)'])
+        mat.node_tree.links.new(img_node.outputs['Alpha'], cas_node_group.inputs['SSS Alpha'])
+        cas_node_group.inputs['SSS Strength'].default_value = 0.5
+    
+    @staticmethod
+    def _addAnisoSpecDir(img_path, mat, cas_node_group, location):
+        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Anis-SpecDir'])
+    
+    @staticmethod
+    def _addTransmittanceTint(img_path, mat, cas_node_group, location):
+        pass
+    
+    @staticmethod
+    def _addOpacityMultiply(img_path, mat, cas_node_group, location):
+        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Alpha//OpacityMult'])
+        
+    
+    method = {
+        'albedoTexture': _addAlbedo,
+        'aoTexture': _addAO,
+        'cavityTexture': _addCavity,
+        'emissiveTexture': _addEmmisive,
+        'glossTexture': _addGlossy,
+        'normalTexture': _addNormal,
+        'specTexture': _addSpec,
+        'opacityMultiplyTexture': _addOpacityMultiply,
+        'scatterThicknessTexture': _addSubsurface,
+
+        # those are things I don't even know how to deal with
+        # (or so hard to deal with I just quitted)
+        'anisoSpecDirTexture': _addAnisoSpecDir,
+        'transmittanceTintTexture': _addTransmittanceTint,
+    }
+
+    @staticmethod
+    def getShaderNodeGroup():
+        filepath = config.PLUS_APEX_SHADER_BLENDER_FILE
+
+        # use cached node group for the same file if already loaded from file before
+        # (cached in CoresNodeAdder since this should stay the same)
+        cached_group = getattr(PlusNodeAdder, 'cached_group', None)
+        if cached_group is not None:
+            print(f'used cache node group: {filepath}')
+            return cached_group
+        
+        
+        print(f'import node group from file: {filepath}')
+        with bpy.data.libraries.load(filepath) as (data_from, data_to):
+            data_to.node_groups = data_from.node_groups
+        # just return any core apex shader in there
+        for group in data_to.node_groups:
+            if 'Apex Shader+' in group.name:
+                PlusNodeAdder.cached_group = group
+                return group
+        else:
+            raise Exception(f'No "Apex Shader+" node tree in {filepath}.',)
+
+    @classmethod
+    def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):
+        # get name
+        texture_name = img_path.stem[img_path.stem.rindex('_')+1:]
+        if texture_name not in cls.method.keys():
+            return False
+        # add texture
+        cls.method[texture_name](img_path, mat, cas_node_group, location)
+        return True
 
 class PathfinderEmoteNodeAdder(CoresNodeAdder):
     """

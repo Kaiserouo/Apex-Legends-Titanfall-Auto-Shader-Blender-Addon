@@ -8,7 +8,7 @@ class NodeAdder:
 
         Note that since the image texture might be removed by "Remove Texture",
         you must guarentee that even if the image texture is directly removed,
-        the rest of nodes you add won't affect the outcome        
+        the rest of nodes you add won't affect the outcome.
     """
     @staticmethod
     def getShaderNodeGroup():
@@ -272,7 +272,6 @@ class PlusNodeAdder(NodeAdder):
     
     @staticmethod
     def _addAnisoSpecDir(img_path, mat, cas_node_group, location):
-        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
         img_node.hide = True
         img_node.location = location
@@ -285,7 +284,6 @@ class PlusNodeAdder(NodeAdder):
     
     @staticmethod
     def _addOpacityMultiply(img_path, mat, cas_node_group, location):
-        # scatterThicknessTexture is possibly just subsurface, so that texture will use this function for now
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
         img_node.hide = True
         img_node.location = location
@@ -352,8 +350,9 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
 
         The actual node group's specification are:
 
-        value = getValueInput()     # increment 0.1
-        v1 = truncate((value + 24) * 10)
+        value = getValueInput()             # increment 0.1
+        v1 = truncate((value + 24) * 10)    # +24 because if value start at 0 then some emotes will
+                                            # repeat frequently, for unknown reason
         x = (v1 % 4) * 0.25
         v2 = truncate(v1 / 4) % 3
         y = (v2 > 0.1) * 0.375 + (v2 > 1.1) * 0.255
@@ -363,6 +362,8 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
     """
     @staticmethod
     def getPathfinderUVTransformNodeGroup():
+        # the node group spec above is from a built-in node.
+
         filepath = config.BUILTIN_BLENDER_FILE
 
         # use cached node group for the same file if already loaded from file before

@@ -8,7 +8,7 @@ from .node_adder import *
 CURRENT_NODEADDER = CoresNodeAdder
 
 class ApexShadeSelectedLegendOp(bpy.types.Operator):
-    """Shade all selected Apex Legends. Can select multiple meshes or armatures."""
+    """Auto-shade all selected Apex Legends. Can select multiple meshes or armatures."""
     bl_idname = "apexaddon.shade_selected_legend"
     bl_label = "Shade Selected Apex Legend"
     bl_options = {'REGISTER', 'UNDO'}
@@ -30,7 +30,7 @@ class ApexShadeSelectedLegendOp(bpy.types.Operator):
 # https://blender.stackexchange.com/questions/14738/use-filemanager-to-select-directory-instead-of-file
 # note we are > 2.8
 class ApexImportRecolor(bpy.types.Operator):
-    """Import recolor"""
+    """Import recolor by choosing a related material folder."""
     bl_idname = "apexaddon.import_recolor"
     bl_label = "Import Recolor"
     bl_options = {'REGISTER'}
@@ -57,7 +57,7 @@ class ApexImportRecolor(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 class ApexShadePathfinderEmoteOp(bpy.types.Operator):
-    """Give a value node s.t. you can click its left & right to change Pathfinder's emote. Use this on emote mesh."""
+    """Give a value shader node s.t. you can click its left & right to change Pathfinder's emote. Use this on Pathfinder's emote mesh."""
     bl_idname = "apexaddon.shade_pathfinder_emote"
     bl_label = "Shade Pathfinder Emote"
     bl_options = {'REGISTER', 'UNDO'}

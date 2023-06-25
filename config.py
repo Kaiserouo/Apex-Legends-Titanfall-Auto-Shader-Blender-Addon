@@ -9,3 +9,4 @@ BUILTIN_BLENDER_FILE_PLUS = str(Path(__file__).absolute().parent / 'asset' / 'Ap
 # blender shader file path, the default path is the one built-in inside addon 
 CORE_APEX_SHADER_BLENDER_FILE = BUILTIN_BLENDER_FILE_BASE
 PLUS_APEX_SHADER_BLENDER_FILE = BUILTIN_BLENDER_FILE_PLUS
+PATHFINDER_EMOTE_SHADER_BLENDER_FILE = BUILTIN_BLENDER_FILE_BASE

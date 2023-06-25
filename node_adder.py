@@ -364,7 +364,7 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
     def getPathfinderUVTransformNodeGroup():
         # the node group spec above is from a built-in node.
 
-        filepath = config.BUILTIN_BLENDER_FILE
+        filepath = config.PATHFINDER_EMOTE_SHADER_BLENDER_FILE
 
         # use cached node group for the same file if already loaded from file before
         cached_group = getattr(PathfinderEmoteNodeAdder, 'cached_pf_group', None)

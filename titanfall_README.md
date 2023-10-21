@@ -2,7 +2,7 @@
 
 > Below is for the usage of Titanfall Auto Shader part of this addon.
 > 
-> For Apex Legends, **how to download** and miscellaneous stuff, refer to [**this page**](./README.md).
+> For Apex Legends, **how to download** and miscellaneous stuff, refer to [**this page**](README.md).
 
 
 Blender addon that auto-shades Titanfall 2 characters in one click.

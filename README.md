@@ -1,6 +1,6 @@
 # Apex Legends / Titanfall Auto Shader
 
-> Below is for Apex Legends auto shading. For **Titanfall 2**, go to [**this page**](./titanfall_README.md).
+> Below is for Apex Legends auto shading. For **Titanfall 2**, go to [**this page**](titanfall_README.md).
 
 Blender addon that auto-shades Apex Legends characters in one click, as well as other functions related to shading.
 

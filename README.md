@@ -1,4 +1,6 @@
-# Apex Legends Auto Shader
+# Apex Legends / Titanfall Auto Shader
+
+> Below is for Apex Legends auto shading. For **Titanfall 2**, go to [**this page**](./titanfall_README.md).
 
 Blender addon that auto-shades Apex Legends characters in one click, as well as other functions related to shading.
 
@@ -133,3 +135,9 @@ Most of those are related to Cores, but other shaders might encounter the same p
   + Remove `specTexture`.
 + Pathfinder's lens is black.
   + Just hide the lens' mesh altogether. The emission is on head.
+
+## Issues
+
+If you encounter any issues, **make an issue on Github** and **describe what you encounter as complete as possible**. Including posting **error messages, blender version and relevant file tree** (e.g. material folder).
+
+Before you post an issue, you can **reinstall the addon with the newest version** and try again. Sometimes this helps.

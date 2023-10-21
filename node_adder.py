@@ -167,7 +167,7 @@ class CoresNodeAdder(NodeAdder):
         filepath = config.CORE_APEX_SHADER_BLENDER_FILE
 
         # use cached node group for the same file if already loaded from file before
-        # (cached in CoresNodeAdder since this should stay the same)
+        # (cached in class since this should stay the same)
         cached_group = getattr(CoresNodeAdder, 'cached_group', None)
         if cached_group is not None:
             print(f'used cache node group: {filepath}')
@@ -313,7 +313,7 @@ class PlusNodeAdder(NodeAdder):
         filepath = config.PLUS_APEX_SHADER_BLENDER_FILE
 
         # use cached node group for the same file if already loaded from file before
-        # (cached in CoresNodeAdder since this should stay the same)
+        # (cached in class since this should stay the same)
         cached_group = getattr(PlusNodeAdder, 'cached_group', None)
         if cached_group is not None:
             print(f'used cache node group: {filepath}')
@@ -414,3 +414,144 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
 
     method = CoresNodeAdder.method.copy()
     method['albedoTexture'] = _addAlbedo
+
+   
+class TitanfallSGNodeAdder(NodeAdder):
+    """
+        SG Shader from `SG_Shader.blend`
+        credits `unknown?` 
+        ref. 
+            - https://noskill.gitbook.io/titanfall2/r2-ripping/model-ripping
+            - https://github.com/Wanty5883/Titanfall2/blob/master/tools/SG_Shader.blend
+    """
+
+    @staticmethod
+    def _addDiffuse(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Diffuse map'])
+
+    @staticmethod
+    def _addNormal(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        img_node.image.colorspace_settings.name = 'Non-Color'
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Normal map'])
+
+    @staticmethod
+    def _addAO(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['AO map'])
+
+    @staticmethod
+    def _addGlossy(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Glossiness map'])
+
+    @staticmethod
+    def _addEmmisive(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Emission input'])
+    
+    @staticmethod
+    def _addCavity(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Cavity map'])
+
+    @staticmethod
+    def _addSpec(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Specular map'])
+
+    @staticmethod
+    def _addOpacityMultiply(img_path, mat, cas_node_group, location):
+        img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+        img_node.hide = True
+        img_node.location = location
+        img_node.image = bpy.data.images.load(str(img_path))
+
+        transparent_node = mat.node_tree.nodes.new(type='ShaderNodeBsdfTransparent')
+        transparent_node.location = (200, 200)
+        
+        mix_shader_node = mat.node_tree.nodes.new(type='ShaderNodeMixShader')
+        mix_shader_node.inputs[0].default_value = 1     # so if there's no image node as input it is no-op
+        mix_shader_node.location = (400, 200)
+
+        # find output node
+        output_node = [node for node in mat.node_tree.nodes.values() if node.type == 'OUTPUT_MATERIAL'][0]
+
+        # ref. https://youtu.be/dMqk0jz749U?t=1108
+        img_node.image.colorspace_settings.name = 'Non-Color'
+        mat.node_tree.links.new(img_node.outputs['Color'], mix_shader_node.inputs[0])
+        mat.node_tree.links.new(transparent_node.outputs[0], mix_shader_node.inputs[1])
+
+        # should actually take whatever is linked to output_node.inputs['Surface'] as input
+        # but may not be the best to assume that. oh well.
+        mat.node_tree.links.new(cas_node_group.outputs[0], mix_shader_node.inputs[2])
+        mat.node_tree.links.new(mix_shader_node.outputs[0], output_node.inputs['Surface'])
+        mat.blend_method = 'CLIP'
+        
+    
+    method = {
+        'col': _addDiffuse,
+        'ao': _addAO,
+        'cav': _addCavity,
+        'ilm': _addEmmisive,
+        'gls': _addGlossy,
+        'nml': _addNormal,
+        'spc': _addSpec,
+        'opa': _addOpacityMultiply,
+    }
+
+    @staticmethod
+    def getShaderNodeGroup():
+        filepath = config.SG_TITANFALL_SHADER_BLENDER_FILE
+
+        # use cached node group for the same file if already loaded from file before
+        # (cached in class since this should stay the same)
+        cached_group = getattr(TitanfallSGNodeAdder, 'cached_group', None)
+        if cached_group is not None:
+            print(f'used cache node group: {filepath}')
+            return cached_group
+        
+        
+        print(f'import node group from file: {filepath}')
+        with bpy.data.libraries.load(filepath) as (data_from, data_to):
+            data_to.node_groups = data_from.node_groups
+        # just return any core apex shader in there
+        for group in data_to.node_groups:
+            if 'S/G-Blender' in group.name:
+                CoresNodeAdder.cached_group = group
+                return group
+        else:
+            raise Exception(f'No "S/G-Shader" node tree in {filepath}.')
+
+    @classmethod
+    def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):
+        # get name
+        texture_name = img_path.stem[img_path.stem.rindex('_')+1:]
+        if texture_name not in cls.method.keys():
+            return False
+        # add texture
+        cls.method[texture_name](img_path, mat, cas_node_group, location)
+        return True
+        

@@ -60,9 +60,14 @@ from bpy import context
 from collections import defaultdict
 from .node_adder import *
 
-
-
 def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
+    """
+        Shade mesh's active material with information from Image Texture
+        within the material.
+        
+        Will delete all existing nodes first!
+    """
+
     print(f"[*] shadeMesh({mesh})")
     mat = mesh.active_material
     nodes = mat.node_tree.nodes
@@ -97,6 +102,10 @@ def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
     return
 
 def shadeArmature(armature: bpy.types.Object, node_adder_cls=NodeAdder):
+    """
+        Shade all given armature's mesh by shadeMesh.
+    """
+
     print(f'[*] shadeArmature({armature})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
     success_ls = []
@@ -127,9 +136,11 @@ def shadeArmature(armature: bpy.types.Object, node_adder_cls=NodeAdder):
 
 def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
     """
-        remove texture (by directly removing that image texture)
-        # e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
-        # then texture_type = 'scatterThicknessTexture'
+        remove texture (by directly removing that image texture) from mesh's
+        active material
+
+        e.g. if you want to remove `octane_base_body_scatterThicknessTexture`,
+        then texture_type = 'scatterThicknessTexture'
     """
     print(f'[*] removeTextureMesh({mesh}, {texture_type})')
     mat = mesh.active_material
@@ -144,6 +155,9 @@ def removeTextureMesh(mesh: bpy.types.Object, texture_type: str):
             nodes.remove(img_texture)
 
 def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
+    """
+        Remove armature's mesh's texture with removeTextureMesh
+    """
     print(f'[*] removeTextureArmature({armature}, {texture_type})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
     success_ls = []
@@ -176,6 +190,8 @@ def removeTextureArmature(armature: bpy.types.Object, texture_type: str):
 def recolorMesh(mesh: bpy.types.Object, dir_path: Path, node_adder_cls: NodeAdder):
     """
         make a recolor material for the mesh, using the materials from `dir_path`
+        Note that this will create a new material for this specific recolor 
+        (material name derived from dir_path)
 
         dir_path: the directory where the textures of this material is stored
     """
@@ -212,11 +228,18 @@ def recolorMesh(mesh: bpy.types.Object, dir_path: Path, node_adder_cls: NodeAdde
     shadeMesh(mesh, node_adder_cls)
 
 def recolorArmature(armature: bpy.types.Object, dir_path: Path, node_adder_cls: NodeAdder):
+    """
+        Recolor given armature's meshes with directories named similarly to dir_path
+
+        e.g. given dir_path "<parent>/bloodhound_base_body/", will find directories such as
+        "<parent>/bloodhound_base_fur/" and others matching "<parent>/bloodhound_base_*/"
+    """
     print(f'[*] recolorArmature({armature}, {dir_path})')
     meshes = [obj for obj in armature.children if obj.type == 'MESH']
 
     # make mapping from name of mesh to mesh, name is derived from image texture path
-    # note that one name may map to multiple mesh,
+    # e.g. mesh with "bloodhound_lgnd_v21_chinatown_body_aoTexture.png" -> mesh name = "body"
+    # note that one name may map to multiple mesh
     # e.g. in pilot_heavy_revenant_legendary_02, mesh `hand` and `body` both uses `body` texture...
     mesh_name_map = defaultdict(list)
     for mesh in meshes:
@@ -260,6 +283,7 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path, node_adder_cls: 
     
     # if len(failed_ls) != 0:
     #     raise Exception(f"Exception occured when recoloring those meshes: {failed_ls}")
+
     dir_name = dir_path.stem                        # e.g. "bloodhound_base_body"
     recolor_name = dir_name[:dir_name.rindex('_')]  # e.g. "bloodhound_base"
     for subdir_path in dir_path.parent.glob(recolor_name + '*'):

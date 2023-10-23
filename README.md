@@ -2,6 +2,8 @@
 
 > Below is for Apex Legends auto shading. For **Titanfall 2**, go to [**this page**](https://github.com/Kaiserouo/Apex-Legends-Titanfall-Auto-Shader-Blender-Addon/blob/main/titanfall_README.md).
 
+[![Demonstration video](https://img.youtube.com/vi/p-CK_bYSK4Y/0.jpg)](https://www.youtube.com/watch?v=p-CK_bYSK4Y "Demonstration video")
+
 Blender addon that auto-shades Apex Legends characters in one click, as well as other functions related to shading.
 
 Currently supports:

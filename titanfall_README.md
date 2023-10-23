@@ -4,6 +4,7 @@
 > 
 > For Apex Legends, **how to download** and miscellaneous stuff, refer to [**this page**](README.md).
 
+[![Demonstration video](https://img.youtube.com/vi/SeedlnG4aPs/0.jpg)](https://www.youtube.com/watch?v=SeedlnG4aPs "Demonstration video")
 
 Blender addon that auto-shades Titanfall 2 characters in one click.
 

@@ -414,8 +414,7 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
 
     method = CoresNodeAdder.method.copy()
     method['albedoTexture'] = _addAlbedo
-
-   
+ 
 class TitanfallSGNodeAdder(NodeAdder):
     """
         SG Shader from `SG_Shader.blend`
@@ -462,9 +461,20 @@ class TitanfallSGNodeAdder(NodeAdder):
     def _addEmmisive(img_path, mat, cas_node_group, location):
         img_node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
         img_node.hide = True
-        img_node.location = location
+        img_node.location = (location[0] - 500, location[1])
         img_node.image = bpy.data.images.load(str(img_path))
-        mat.node_tree.links.new(img_node.outputs['Color'], cas_node_group.inputs['Emission input'])
+
+        # add mix color node
+        # s.t. if you want pilot emission to shine cyan, just make fac = 1
+        mix_rgb_node = mat.node_tree.nodes.new(type='ShaderNodeMixRGB')
+        mix_rgb_node.blend_type = 'MULTIPLY'
+        mix_rgb_node.inputs['Fac'].default_value = 0
+        mix_rgb_node.inputs['Color2'].default_value = [0, 1, 1, 1]  # cyan color
+        mix_rgb_node.location = (location[0] - 200, location[1])
+        mix_rgb_node.label = 'Emission Mix Node'
+
+        mat.node_tree.links.new(img_node.outputs['Color'], mix_rgb_node.inputs['Color1'])
+        mat.node_tree.links.new(mix_rgb_node.outputs['Color'], cas_node_group.inputs['Emission input'])
     
     @staticmethod
     def _addCavity(img_path, mat, cas_node_group, location):
@@ -532,7 +542,6 @@ class TitanfallSGNodeAdder(NodeAdder):
         if cached_group is not None:
             print(f'used cache node group: {filepath}')
             return cached_group
-        
         
         print(f'import node group from file: {filepath}')
         with bpy.data.libraries.load(filepath) as (data_from, data_to):

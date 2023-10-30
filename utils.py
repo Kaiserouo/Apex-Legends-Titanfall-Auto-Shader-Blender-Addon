@@ -58,18 +58,18 @@ import glob
 from pathlib import Path
 from bpy import context
 from collections import defaultdict
+from typing import *
 from .node_adder import *
 
-def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
+def shadeMaterial(mat: bpy.types.Material, node_adder_cls: NodeAdder):
     """
-        Shade mesh's active material with information from Image Texture
-        within the material.
+        Shade material with information from Image Texture within the 
+        active material of mesh. Assumes there is at least one image texture
+        in this material!
         
-        Will delete all existing nodes first!
+        Will delete all existing nodes first.
     """
 
-    print(f"[*] shadeMesh({mesh})")
-    mat = mesh.active_material
     nodes = mat.node_tree.nodes
     links = mat.node_tree.links
 
@@ -100,6 +100,20 @@ def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
         print(f'     Adding texture {str(texture_path)}... {"O" if ret else "X"}')
     
     return
+
+def shadeMesh(mesh: bpy.types.Object, node_adder_cls: NodeAdder):
+    """
+        Shade mesh's active material with information from Image Texture
+        within the active material of mesh. Assumes there is at least one
+        image texture in this material
+        
+        Will delete all existing nodes first!
+    """
+
+    print(f"[*] shadeMesh({mesh})")
+    mat = mesh.active_material
+
+    shadeMaterial(mat, node_adder_cls)
 
 def shadeArmature(armature: bpy.types.Object, node_adder_cls=NodeAdder):
     """
@@ -298,3 +312,60 @@ def recolorArmature(armature: bpy.types.Object, dir_path: Path, node_adder_cls: 
             for mesh in mesh_name_map[name]:
                 recolorMesh(mesh, subdir_path, node_adder_cls)
     return
+
+def matchString(from_ls: List[str], to_ls: List[str]) -> Dict[str, str]:
+    # match string from `from_ls` to `to_ls`, returns a mapping
+    # I don't really wanna install additional module in blender python...
+    # should be O(distance) * O(len(from_ls) * len(to_ls))
+
+    def distance(s: str, t: str) -> int:
+        # directly copied from https://machinelearningknowledge.ai/ways-to-calculate-levenshtein-distance-edit-distance-in-python/
+        m = len(s)
+        n = len(t)
+        d = [[0] * (n + 1) for i in range(m + 1)]  
+
+        for i in range(1, m + 1):
+            d[i][0] = i
+
+        for j in range(1, n + 1):
+            d[0][j] = j
+        
+        for j in range(1, n + 1):
+            for i in range(1, m + 1):
+                if s[i - 1] == t[j - 1]:
+                    cost = 0
+                else:
+                    cost = 1
+                d[i][j] = min(d[i - 1][j] + 1,      # deletion
+                            d[i][j - 1] + 1,      # insertion
+                            d[i - 1][j - 1] + cost) # substitution   
+
+        return d[m][n]
+    
+    def argmin(array):
+        return min(range(len(array)), key=lambda x: array[x])
+    
+    d = {}
+    for f_s in from_ls:
+        d_ls = [distance(f_s, t_s) for t_s in to_ls]
+        d[f_s] = to_ls[argmin(d_ls)]
+    return d
+
+def shadeMaterialByDirectory(mat: bpy.types.Material, dir_path: Path, node_adder_cls: NodeAdder):
+    """
+        Shade a material by directory.
+        Will properly initialize the material (use_node = True, add an image for shadeMaterial)
+    """
+    # note that we don't use utils.recolorMesh because it creates new material
+    # but shadeMaterial requires the material have 1 image texture
+    # we clear material and add random image
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    nodes.clear()
+
+    img_path = next(dir_path.iterdir())
+    img_node = nodes.new(type='ShaderNodeTexImage')
+    img_node.image = bpy.data.images.load(str(img_path))
+
+    # do shading
+    shadeMaterial(mat, node_adder_cls)

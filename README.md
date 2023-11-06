@@ -13,11 +13,15 @@ Currently supports:
 
 ## How To Use
 
+First, **it's important that you know how to shade characters manually**. I recommend that you read through [this reddit post](https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/) first to understand the very basics of how Apex Legends shading pipeline works.
+
+**Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
+
 ### Shader Type
 
 There are different Apex Shaders on the Internet. We implemented some of them, and you can choose which one to use by `Right-click > Apex Shader > Choose Shader`. The currently selected shader will be marked `(selected)` in the menu.
 
-The implemented shader is listed below. **Do note that this is just a helper tool!** Learn how to shade legends manually before using this tool to fix any possible errors.
+The implemented shader is listed below. 
 
 + `Cores Apex Shader`: From [this reddit post](https://www.reddit.com/r/apexlegends/comments/jtg4a7/basic_guide_to_render_apex_legends_models_in/). Credits `CoReArtZz`. 
   + Default. (There's a lot of tutorials regarding this one.)

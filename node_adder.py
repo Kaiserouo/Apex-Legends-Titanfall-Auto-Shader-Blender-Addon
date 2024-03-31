@@ -1,6 +1,42 @@
 import bpy
 from . import config
 from pathlib import Path
+from collections import defaultdict
+
+shader_cache = {}
+def fetchNodeGroupFromCacheOrFile(name: str, blend_fpath: Path, contain_name: str):
+    """
+        Get a shader node group from cache (if fetched before), else search from blend file.
+        The cache is `shader_cache`.
+
+        Args:
+            name: the index for the cache
+            blend_fpath: blend file path if cache miss
+            contain_name: will do `contain_name in group.name` when searching from the file
+    """
+    blend_fpath = str(blend_fpath)
+
+    # use cached node group for the same file if already loaded from file before
+    if name in shader_cache:
+        print(f'Use cached node group: {name}')
+        # check cache integrity in case of RSAStruct error
+        # (reference will become invalid when creating / reopening a file without closing blender)
+        if 'invalid' in str(shader_cache[name]):
+            print(f'Cache invalid, re-import...')
+        else:
+            return shader_cache[name]
+    
+    print(f'Import node group from file: {blend_fpath}')
+    with bpy.data.libraries.load(blend_fpath) as (data_from, data_to):
+        data_to.node_groups = data_from.node_groups
+
+    # just return any shader matched in there
+    for group in data_to.node_groups:
+        if contain_name in group.name:
+            shader_cache[name] = group
+            return group
+    else:
+        raise Exception(f'No "{contain_name}" node tree in {blend_fpath}.')
 
 class NodeAdder:
     """
@@ -165,12 +201,13 @@ class CoresNodeAdder(NodeAdder):
     @staticmethod
     def getShaderNodeGroup():
         filepath = config.CORE_APEX_SHADER_BLENDER_FILE
+        return fetchNodeGroupFromCacheOrFile('CoresApexShader_cache', filepath, 'Cores Apex Shader')
 
         # use cached node group for the same file if already loaded from file before
         # (cached in class since this should stay the same)
         cached_group = getattr(CoresNodeAdder, 'cached_group', None)
         if cached_group is not None:
-            print(f'used cache node group: {filepath}')
+            print(f'used cache node group: {filepath} {cached_group}')
             return cached_group
         
         

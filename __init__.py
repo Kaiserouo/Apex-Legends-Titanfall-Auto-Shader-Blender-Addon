@@ -1,3 +1,8 @@
+if "bpy" in locals():
+    import importlib
+    print('relaoding Apex-Legends-Auto-Shader...')
+    importlib.reload(menu)
+
 bl_info = {
     "name": "Apex Legends Auto Shader Addon",
     "description": "Addon that helps shading Apex Legends characters.",
@@ -8,6 +13,8 @@ bl_info = {
     "doc_url": "https://github.com/Kaiserouo/Apex-Legends-Auto-Shader-Blender-Addon",
     "category": "Object"
 }
+
+
 
 import bpy
 from . import menu

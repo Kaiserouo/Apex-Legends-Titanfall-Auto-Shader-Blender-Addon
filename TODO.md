@@ -6,3 +6,8 @@
 + Support multiple emission value changing
   + by making a shared value group that has a value node (emission strength) & emission texture multiply mix node inside (for changing color)
   + make node adder support fetching node group name? (also should set node group name! otherwise the node group (node) actually has empty label)
++ BUG: RSAStruct Error
+  + happens when you use the addon, make a new file (without actually closing blender), and do it again
+  + probably because the reference is stale, need to reload again. Haven't fixed it.
++ TitanfallSGNodeAdder's cache is using Cores... that will be a problem
+  + just refactor the caching out of all classes, they use the same mechanism...

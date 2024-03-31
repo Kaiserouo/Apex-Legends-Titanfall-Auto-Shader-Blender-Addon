@@ -203,25 +203,6 @@ class CoresNodeAdder(NodeAdder):
         filepath = config.CORE_APEX_SHADER_BLENDER_FILE
         return fetchNodeGroupFromCacheOrFile('CoresApexShader_cache', filepath, 'Cores Apex Shader')
 
-        # use cached node group for the same file if already loaded from file before
-        # (cached in class since this should stay the same)
-        cached_group = getattr(CoresNodeAdder, 'cached_group', None)
-        if cached_group is not None:
-            print(f'used cache node group: {filepath} {cached_group}')
-            return cached_group
-        
-        
-        print(f'import node group from file: {filepath}')
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.node_groups = data_from.node_groups
-        # just return any core apex shader in there
-        for group in data_to.node_groups:
-            if 'Cores Apex Shader' in group.name:
-                CoresNodeAdder.cached_group = group
-                return group
-        else:
-            raise Exception(f'No "Cores Apex Shader" node tree in {filepath}.')
-
     @classmethod
     def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):
         # get name
@@ -348,25 +329,7 @@ class PlusNodeAdder(NodeAdder):
     @staticmethod
     def getShaderNodeGroup():
         filepath = config.PLUS_APEX_SHADER_BLENDER_FILE
-
-        # use cached node group for the same file if already loaded from file before
-        # (cached in class since this should stay the same)
-        cached_group = getattr(PlusNodeAdder, 'cached_group', None)
-        if cached_group is not None:
-            print(f'used cache node group: {filepath}')
-            return cached_group
-        
-        
-        print(f'import node group from file: {filepath}')
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.node_groups = data_from.node_groups
-        # just return any core apex shader in there
-        for group in data_to.node_groups:
-            if 'Apex Shader+' in group.name:
-                PlusNodeAdder.cached_group = group
-                return group
-        else:
-            raise Exception(f'No "Apex Shader+" node tree in {filepath}.',)
+        return fetchNodeGroupFromCacheOrFile('PlusNodeAdder_cache', filepath, 'Apex Shader+')
 
     @classmethod
     def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):
@@ -400,25 +363,8 @@ class PathfinderEmoteNodeAdder(CoresNodeAdder):
     @staticmethod
     def getPathfinderUVTransformNodeGroup():
         # the node group spec above is from a built-in node.
-
         filepath = config.PATHFINDER_EMOTE_SHADER_BLENDER_FILE
-
-        # use cached node group for the same file if already loaded from file before
-        cached_group = getattr(PathfinderEmoteNodeAdder, 'cached_pf_group', None)
-        if cached_group is not None:
-            print(f'used cache node group: {filepath}')
-            return cached_group
-        
-        
-        print(f'import node group from file: {filepath}')
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.node_groups = data_from.node_groups
-        for group in data_to.node_groups:
-            if 'Pathfinder Emote UV Transform Node' in group.name:
-                PathfinderEmoteNodeAdder.cached_pf_group = group
-                return group
-        else:
-            raise Exception(f'No "Pathfinder Emote UV Transform Node" node tree in {filepath}.')
+        return fetchNodeGroupFromCacheOrFile('PathfinderEmoteNodeAdder_cache', filepath, 'Pathfinder Emote UV Transform Node')
         
     @staticmethod
     def _addAlbedo(img_path, mat, cas_node_group, location):
@@ -572,24 +518,7 @@ class TitanfallSGNodeAdder(NodeAdder):
     @staticmethod
     def getShaderNodeGroup():
         filepath = config.SG_TITANFALL_SHADER_BLENDER_FILE
-
-        # use cached node group for the same file if already loaded from file before
-        # (cached in class since this should stay the same)
-        cached_group = getattr(TitanfallSGNodeAdder, 'cached_group', None)
-        if cached_group is not None:
-            print(f'used cache node group: {filepath}')
-            return cached_group
-        
-        print(f'import node group from file: {filepath}')
-        with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            data_to.node_groups = data_from.node_groups
-        # just return any core apex shader in there
-        for group in data_to.node_groups:
-            if 'S/G-Blender' in group.name:
-                CoresNodeAdder.cached_group = group
-                return group
-        else:
-            raise Exception(f'No "S/G-Shader" node tree in {filepath}.')
+        return fetchNodeGroupFromCacheOrFile('TitanfallSGNodeAdder_cache', filepath, 'S/G-Blender')
 
     @classmethod
     def addImageTexture(cls, img_path, mat, cas_node_group, location=(0.0, 0.0)):

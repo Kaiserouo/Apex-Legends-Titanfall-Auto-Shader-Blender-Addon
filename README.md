@@ -38,10 +38,10 @@ For mesh and armatures, this addon can find and import all other textures based 
 
 Steps:
 1. Import Apex Legends characters.
-2. choose its armature or mesh.
+2. Choose its armature or mesh (**You can choose more than one**, the addon will shade all of them).
 3. `Right-click (on armature or mesh) > Apex Shader > Shade Selected Legends`. All the textures (that can be procedurally shaded) will be auto-shaded, using the shader you choose.
 
-If you choose a mesh then only that mesh will be shaded. If you choose armature then all associated meshes will be shaded.
+If you choose a mesh then only that mesh will be shaded. If you choose an armature then all associated meshes will be shaded.
 
 i.e. **if you want to auto-shade the whole legend, choose their armature**.
 
@@ -74,13 +74,13 @@ Legion/
             ├── bloodhound_lgnd_v21_heroknight_rt01_gear_albedoTexture.png
             └── ...(other texture images)
 ```
-1. Import the original model. In this case, Feral's Future (`bloodhound_v21_heroknight_w`).
-2. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`.
-3. Select any **folder** related to the recolor, e.g. `Legion/exported_files/materials/bloodhound_lgnd_v21_heroknight_rt01_body/`. 
+2. Import the original model. In this case, Feral's Future (`bloodhound_v21_heroknight_w`).
+3. Select its **armature**, and `Right-click > Apex Shader > Import Recolor`.
+4. Select any **folder** related to the recolor, e.g. `Legion/exported_files/materials/bloodhound_lgnd_v21_heroknight_rt01_body/`. 
     + Any one of the folder will do, the addon will automatically find the other folders related to this recolor.
       + i.e. you can also choose `bloodhound_lgnd_v21_heroknight_rt01_gear/` if you want, the addon will still find both of them.
     + **DO NOT CHOOSE FOLDERS LIKE** <code>bloodhound_lgnd_v21_heroknight_rt01_body_**colpass**</code>. The addon treats the last word as the mesh name, so it won't be able to find other related folders. The same goes with `prepass, shadow, tightshadow, vsm`. **Choose folders that ends with mesh names** like `body, gear, helmet, fur`, etc.
-4. Done. Enjoy.
+5. Done. Enjoy.
 
 You can also recolor a mesh instead of an armature. In that case, the addon will use the selected folder's textures directly.
 
@@ -139,6 +139,7 @@ Most of those are related to Cores, but other shaders might encounter the same p
   + This is because their `opacityMultiplyTexture` is not like other model's opacity multiply texture, so the auto-shade method failed. This may also occur on other models.
   + Remove `opacityMultiplyTexture` (by `Remove Texture From Selected Legends > Remove opacityMultiplyTexture` on armature.)
 + Blender stops responding when shading a lot of meshes all at once.
+  + (At least if you shade 10+ legends at once blender would definitely stop a bit.)
   + This is normal, it's just the addon took too long processing those textures. **DON'T CLOSE BLENDER** and wait a while longer, it will be good soon enough... (or do close blender if you give up waiting.)
   + Open console before shading (`Window > Toggle System Console`) to track progress.
 + Octane's skin looked orange-ish.
